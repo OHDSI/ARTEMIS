@@ -22,3 +22,6 @@ main_test.py
 *.pyc
 .tmp
 __pycache__
+.DS_Store
+.Ruserdata*
+.venv*

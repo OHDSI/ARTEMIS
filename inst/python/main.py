@@ -7,6 +7,15 @@ from numpy import append
 from init import init_Hmat, init_TRmat, init_TCmat, init_traceMat
 from score import TSW_scoreMat, find_best_score
 from align import align_TSW
+from TSW_scoreMat import TSW_scoreMat as TSWc
+
+import time
+def timit(tag, func, data):
+    start = time.perf_counter()
+    func(*data)
+    end = time.perf_counter()
+    print(f"{tag} - Execution time: {end - start:.6f} seconds")
+
 
 pd.options.display.max_columns = None
 
@@ -23,7 +32,7 @@ def find_gaps(pat, seq):
 
 def temporal_alignment(
     s1, regName, s2, g, T, s, verbose, mem=-1, removeOverlap=0, method="PropDiff"
-):
+):    
     s1_len = len(s1)
     s2_len = len(s2)
 
@@ -59,8 +68,47 @@ def temporal_alignment(
     ]
     returnDat = np.array(returnDat, dtype=object)
 
-    # Impute score matrix, retrieve relevant vars
-    TSW_scoreMat(s1, s1_len, s2, s2_len, g, T, H, TR, TC, traceMat, s, method)
+    # Impute score matrix, retrieve relevant vars - python
+    # TSW_scoreMat()
+    # timit("PYTHON", TSW_scoreMat, [s1, s1_len, s2, s2_len, g, T, H, TR, TC, traceMat, s, method])
+
+    # ------------------ NEW CALL -------------------
+    # Impute score matrix, retrieve relevant vars - C
+    # Re-Initialise the 3 score matrices and the traceback matrix
+    # H = init_Hmat(s1_len, s2_len)
+    # TR = init_TRmat(s1, s1_len, s2, s2_len)
+    # TC = init_TCmat(s1, s1_len, s2, s2_len)
+    # traceMat = init_traceMat(s1_len, s2_len)
+
+    # This step prepare inputs for faster call - need to make sure it has correct data and dtypes
+    drug2idx = {k: i for i, k in enumerate(s.keys())}
+    s1_times = np.ascontiguousarray([float(t) for t, d in s1], dtype=np.float64)
+    s2_times = np.ascontiguousarray([float(t) for t, d in s2], dtype=np.float64)
+    s1_drugs = np.ascontiguousarray([drug2idx[d] for t, d in s1], dtype=np.int32)
+    s2_drugs = np.ascontiguousarray([drug2idx[d] for t, d in s2], dtype=np.int32)
+
+    # Set dtypes
+    s_arr = np.ascontiguousarray(s.to_numpy(dtype=np.float64))  # converting to matrix
+    H        = np.ascontiguousarray(H, dtype=np.float64)
+    TR       = np.ascontiguousarray(TR, dtype=np.float64)
+    TC       = np.ascontiguousarray(TC, dtype=np.float64)
+    traceMat = np.ascontiguousarray(traceMat, dtype=np.int32)
+    s_arr    = np.ascontiguousarray(s_arr, dtype=np.float64)
+
+    # TSWc(s1_times, s1_drugs, s1_len,
+    #     s2_times, s2_drugs, s2_len,
+    #     g, T, H, TR, TC, traceMat,
+    #     s_arr, method)
+    
+    # timit("C", TSWc, [s1_times, s1_drugs, s1_len,
+    #     s2_times, s2_drugs, s2_len,
+    #     g, T, H, TR, TC, traceMat,
+    #     s_arr, method])
+    TSWc(s1_times, s1_drugs, s1_len,
+        s2_times, s2_drugs, s2_len,
+        g, T, H, TR, TC, traceMat,
+        s_arr, method)
+
 
     # Find best scoring cell
     finalScore, finalIndex, mem_index, mem_score = find_best_score(
