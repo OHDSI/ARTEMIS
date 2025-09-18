@@ -35,13 +35,8 @@ def find_gaps(pat, seq):
 
 
 def temporal_alignment(
-<<<<<<< HEAD
     s1, regName, s2, g, T, s, verbose, mem=-1, removeOverlap=0, method="PropDiff"
 ):    
-=======
-    s1, s2, g, T, s, verbose, mem=-1, removeOverlap=0, method="PropDiff"
-):
->>>>>>> 504ee560be1fa2701f7bb7dc43601d04a6e529e0
     s1_len = len(s1)
     s2_len = len(s2)
 
@@ -111,10 +106,6 @@ def temporal_alignment(
     
         
     for i in range(0, len(mem_index)):
-<<<<<<< Updated upstream
-        s1_aligned_t, s2_aligned_t, totAligned_t, s1_start, s2_start = align_TSW(
-            traceMat, s1, s2, s1_len, s2_len, mem_index[i]
-=======
         # s1_aligned_t, s2_aligned_t, totAligned_t = align_TSW(
             # traceMat, s1, s2, s1_len, s2_len, mem_index[i]
             # )
@@ -124,7 +115,6 @@ def temporal_alignment(
            s1_times, s1_drugs, s1_len, 
            s2_times, s2_drugs, s2_len, 
            max_index
->>>>>>> Stashed changes
         )
 
         s_f_len = max(len(findall(pat, s2_aligned_t)), len(findall(pat, s1_aligned_t)))
