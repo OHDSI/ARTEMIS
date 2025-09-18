@@ -32,7 +32,8 @@
 #' @export
 align <- function(regimen,
                   regName,
-                  drugRec,
+                  personID,
+                  personSeq,
                   g = 0.4,
                   Tfac = 0.5,
                   s = NA,
@@ -44,17 +45,20 @@ align <- function(regimen,
         reticulate::source_python(system.file("python/main.py", package = "ARTEMIS"), envir = globalenv())
     }
 
+    regimen_list <- encode(regimen)
+    drugRec <- encode(personSeq)
+
     dat <- data.frame(
-              regName        = character(),
-              Regimen        = character(),
-              DrugRecord     = character(),
-              Score          = numeric(),
-              regimen_Start  = numeric(),
-              regimen_End    = numeric(),
-              drugRec_Start  = numeric(),
-              drugRec_End    = numeric(),
-              Aligned_Seq_len = numeric(),
-              totAlign       = numeric()
+        Regimen        = character(),
+        DrugRecord     = character(),
+        Score          = numeric(),
+        adjustedS      = numeric(),
+        regimen_Start  = numeric(),
+        regimen_End    = numeric(),
+        drugRec_Start  = numeric(),
+        drugRec_End    = numeric(),
+        Aligned_Seq_len = numeric(),
+        totAlign       = numeric()
             )
     
     
@@ -63,8 +67,7 @@ align <- function(regimen,
     }
         
     temp_dat <- temporal_alignment(
-        regimen,
-        regName,
+        regimen_list,
         drugRec,
         g,
         Tfac,
@@ -75,26 +78,28 @@ align <- function(regimen,
         method
     )
     temp_dat <- as.data.frame(temp_dat)
+
+    if(nrow(temp_dat) == 0) {
+        return(data.frame())
+    }
     
     names(temp_dat) <- names(dat)
     
     temp_dat <- temp_dat %>%
-        dplyr::mutate(dplyr::across(c(Score, regimen_Start, regimen_End, 
+        dplyr::mutate(dplyr::across(c(Score, adjustedS, 
+                                      regimen_Start, regimen_End, 
                                       drugRec_Start, drugRec_End,
                                       Aligned_Seq_len, totAlign), 
                       as.numeric))
     
-    temp_dat[1, ]$Regimen <- decode(regimen)
-    temp_dat[1, ]$DrugRecord <- decode(drugRec)
-    temp_dat$Regimen <- gsub("^;", "", temp_dat$Regimen)
-    temp_dat$DrugRecord <- gsub("^;", "", temp_dat$DrugRecord)
-    
-    temp_dat$adjustedS <- temp_dat$Score / temp_dat$totAlign
+    temp_dat$regName <- regName
+    temp_dat$Regimen_full <- regimen
+    temp_dat$DrugRecord_full <- personSeq
+    temp_dat$personID <- as.character(personID)
     
     temp_dat <- temp_dat %>%
-        dplyr::filter(totAlign != 0 | is.na(totAlign), 
-                        totAlign != -1 | is.na(totAlign), 
-                        (adjustedS > 0 | is.na(adjustedS)))
+        dplyr::filter(!is.na(adjustedS) & !is.na(totAlign)) %>%
+        dplyr::filter(totAlign > 0 & adjustedS > 0)
 
     return(temp_dat)
 }

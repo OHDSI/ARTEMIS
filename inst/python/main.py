@@ -7,8 +7,12 @@ from numpy import append
 from init import init_Hmat, init_TRmat, init_TCmat, init_traceMat
 from score import TSW_scoreMat, find_best_score
 from align import align_TSW
-from TSW_scoreMat import TSW_scoreMat as TSWc
-
+# from TSW_scoreMat import TSW_scoreMat as TSWc
+from TSW_scoreMat import (
+    TSW_scoreMat as TSWc,
+    find_best_score as fbs,
+    align_TSW as aTSW
+)
 import time
 def timit(tag, func, data):
     start = time.perf_counter()
@@ -31,8 +35,13 @@ def find_gaps(pat, seq):
 
 
 def temporal_alignment(
+<<<<<<< HEAD
     s1, regName, s2, g, T, s, verbose, mem=-1, removeOverlap=0, method="PropDiff"
 ):    
+=======
+    s1, s2, g, T, s, verbose, mem=-1, removeOverlap=0, method="PropDiff"
+):
+>>>>>>> 504ee560be1fa2701f7bb7dc43601d04a6e529e0
     s1_len = len(s1)
     s2_len = len(s2)
 
@@ -42,31 +51,13 @@ def temporal_alignment(
     TC = init_TCmat(s1, s1_len, s2, s2_len)
     traceMat = init_traceMat(s1_len, s2_len)
 
-    # Track if secondary alignments have been collected
-    secondary = 0
-
     # Setup pattern for detecting sequence lengths, by number of "."s (Aligned drugs)
     pat = "\."
-
     # Setup pattern for detecting sequence gaps, by number of "__"s (Aligned gaps)
-    pat_gap = "(__;)+[0-9]+"
     pat_end_gap = "(__;)+__$|__$"
-    pat_search = "__"
 
     # Init return Dat
-    returnDat = [
-        regName,
-        str(s1).strip("[]"),
-        str(s2).strip("[]"),
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-    ]
-    returnDat = np.array(returnDat, dtype=object)
+    returnDat = np.empty(10)
 
     # Impute score matrix, retrieve relevant vars - python
     # TSW_scoreMat()
@@ -111,38 +102,51 @@ def temporal_alignment(
 
 
     # Find best scoring cell
-    finalScore, finalIndex, mem_index, mem_score = find_best_score(
+    # finalScore, finalIndex, mem_index, mem_score = find_best_score(
+    #     H, s1_len, s2_len, mem, verbose
+    # )
+    finalScore, finalIndex, mem_index, mem_score = fbs(
         H, s1_len, s2_len, mem, verbose
     )
-
+    
+        
     for i in range(0, len(mem_index)):
-        s1_aligned_t, s2_aligned_t, totAligned_t = align_TSW(
+<<<<<<< Updated upstream
+        s1_aligned_t, s2_aligned_t, totAligned_t, s1_start, s2_start = align_TSW(
             traceMat, s1, s2, s1_len, s2_len, mem_index[i]
+=======
+        # s1_aligned_t, s2_aligned_t, totAligned_t = align_TSW(
+            # traceMat, s1, s2, s1_len, s2_len, mem_index[i]
+            # )
+        max_index = mem_index[i]
+        s1_aligned_t, s2_aligned_t, totAligned_t = aTSW(
+           traceMat, 
+           s1_times, s1_drugs, s1_len, 
+           s2_times, s2_drugs, s2_len, 
+           max_index
+>>>>>>> Stashed changes
         )
 
         s_f_len = max(len(findall(pat, s2_aligned_t)), len(findall(pat, s1_aligned_t)))
 
-        s1_gaps = find_gaps(pat_gap, s1_aligned_t)
         s1_end_gaps = find_gaps(pat_end_gap, s1_aligned_t)
-        s2_gaps = find_gaps(pat_gap, s2_aligned_t)
-        s2_end_gaps = find_gaps(pat_end_gap, s2_aligned_t)
 
-        s1_start = mem_index[i][1] - s_f_len
         s1_end = mem_index[i][1]
-        s2_start = mem_index[i][0] - s_f_len + s2_gaps + s2_end_gaps
         s2_end = mem_index[i][0] - s1_end_gaps
 
         if (s1_start + 1) > 1:
             totAligned_t = totAligned_t + (s1_end - (s1_start + 1))
             s_f_len = s_f_len + (s1_end - (s1_start + 1))
 
+        adjustedS = mem_score[i] / totAligned_t
+
         returnDat = append(
             returnDat,
             [
-                regName,
                 s1_aligned_t,
                 s2_aligned_t,
                 mem_score[i],
+                adjustedS,
                 s1_start + 1,
                 s1_end,
                 s2_start + 1,

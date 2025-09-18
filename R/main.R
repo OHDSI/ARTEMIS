@@ -48,7 +48,7 @@ generateRawAlignments <- function(stringDF,
                                   mem = -1,
                                   removeOverlap = -1,
                                   method = "PropDiff",
-                                  writeOut = TRUE,
+                                  writeOut = FALSE,
                                   outputName = "Output") {
     # Input check: stop if stringDF is not a data.frame or has no rows                                
     obj_name <- deparse(substitute(stringDF))
@@ -101,13 +101,12 @@ generateRawAlignments <- function(stringDF,
         
         output_patient = list()
         for (i in c(1:nrow(selected_regimens))) {
-            regimen <- encode(selected_regimens[i, ]$shortString)
-            regName <- selected_regimens[i, ]$regName
             
-            output_temp <- align(
-                regimen = regimen,
-                regName = regName,
-                drugRec = drugRecord,
+            output_patient[[i]] <- align(
+                regimen = selected_regimens[i, ]$shortString,
+                regName = selected_regimens[i, ]$regName,
+                personID = stringDF[j, ]$person_id,
+                personSeq = stringDF[j, ]$seq,
                 g = g,
                 Tfac = Tfac,
                 s = NA,
@@ -116,13 +115,6 @@ generateRawAlignments <- function(stringDF,
                 removeOverlap = removeOverlap,
                 method = method
             )
-            
-            if (nrow(output_temp) > 1) {
-                output_temp$personID <- as.character(stringDF[j, ]$person_id)
-
-                output_patient[[i]] <- output_temp
-            }
-            
         }
         
         progress(x = j, max = nrow(stringDF))

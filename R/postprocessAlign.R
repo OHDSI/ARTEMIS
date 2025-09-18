@@ -193,19 +193,17 @@ combineOverlaps <- function(df, regimenCombine) {
 #' @export
 #' 
 postprocessDF <- function(output, regimenCombine = 28) {
-    # Remove rows with NA score and low scoring or one drag alignments  
+    # Remove rows with NA score and low scoring or one drug alignments  
     df <- output %>% 
-        dplyr::filter(!is.na(Score)) %>%
-        dplyr::filter(totAlign > 1 & adjustedS > 0.501) %>% 
-        dplyr::distinct()
+        dplyr::filter(totAlign > 1 & adjustedS > 0.501)
 
     if (nrow(df) == 0) {
         return(data.frame())
     }  
 
-    # The element that has no Score, 
-    # contains the full patient drug record
-    drugRec <- encode(output[is.na(output$Score), ]$DrugRecord[1])
+    # Use patient drug record to create cumulative times
+    # Assume drug record is the same for all rows
+    drugRec <- encode(df$DrugRecord_full[1])
     drugDF <- createDrugDF(drugRec)
 
     df <- add_cumultive_times_to_df(df, drugDF)    
