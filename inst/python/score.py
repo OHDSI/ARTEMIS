@@ -208,8 +208,4 @@ def find_best_score(H, s1_len, s2_len, mem, verbose):
     finalScore = max_score
     finalIndex = max_index
 
-    # type-safeguard
-    mem_index = np.array(mem_index, dtype=np.int32).reshape(-1, 2)
-    mem_score = np.array(mem_score, dtype=np.float64).reshape(-1)
-
     return finalScore, finalIndex, mem_index, mem_score

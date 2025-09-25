@@ -11,7 +11,6 @@ def align_TSW(traceMat, s1, s2, s1_len, s2_len, max_index):
     j = s2_len
 
     totAligned = 0
-
     while traceMat[max_j][max_i] > 0:
         if traceMat[max_j][max_i] == 1:
             temp_s1_aligned = s1[max_i - 1][0] + "." + s1[max_i - 1][1]
@@ -21,7 +20,6 @@ def align_TSW(traceMat, s1, s2, s1_len, s2_len, max_index):
             i -= 1
             j -= 1
             totAligned += 1
-
         elif traceMat[max_j][max_i] == 3:
             temp_s1_aligned = s1[max_i - 1][0] + "." + s1[max_i - 1][1]
             temp_s2_aligned = "__"

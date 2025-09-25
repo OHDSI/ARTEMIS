@@ -7,18 +7,8 @@ from numpy import append
 from init import init_Hmat, init_TRmat, init_TCmat, init_traceMat
 from score import TSW_scoreMat, find_best_score
 from align import align_TSW
-# from TSW_scoreMat import TSW_scoreMat as TSWc
-from TSW_scoreMat import (
-    TSW_scoreMat as TSWc,
-    find_best_score as fbs,
-    align_TSW as aTSW
-)
-import time
-def timit(tag, func, data):
-    start = time.perf_counter()
-    func(*data)
-    end = time.perf_counter()
-    print(f"{tag} - Execution time: {end - start:.6f} seconds")
+from utils import timeit
+from TSW_Package import TSWc, fbs, aTSW
 
 
 pd.options.display.max_columns = None
@@ -35,8 +25,8 @@ def find_gaps(pat, seq):
 
 
 def temporal_alignment(
-    s1, regName, s2, g, T, s, verbose, mem=-1, removeOverlap=0, method="PropDiff"
-):    
+    s1, s2, g, T, s, verbose, mem=-1, removeOverlap=0, method="PropDiff"
+): 
     s1_len = len(s1)
     s2_len = len(s2)
 
