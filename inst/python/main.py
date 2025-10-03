@@ -8,8 +8,17 @@ from init import init_Hmat, init_TRmat, init_TCmat, init_traceMat
 
 # --- ADD TSW_Package to sys.path
 import sys, os
-sys.path.append(os.path.abspath("<PATH/TO/TSW_Package_PARENT_DIR>"))
 
+# Full path to the current script
+current_file = os.path.abspath(__file__)
+current_dir = os.path.dirname(current_file)
+
+# Build absolute path to ../cython/TSW_Package (or compiled .so)
+cython_dir = os.path.join(current_dir, "..", "cython")
+cython_dir = os.path.abspath(cython_dir)  # normalize path
+
+# Add to Python path so you can import
+sys.path.append(cython_dir)
 from TSW_Package import TSWc, fbs, aTSW
 
 
@@ -18,7 +27,7 @@ pd.options.display.max_columns = None
 
 def temporal_alignment(
     s1, s2, g, T, s, verbose, mem=-1, removeOverlap=0, method="PropDiff"
-): 
+):
     s1_len = len(s1)
     s2_len = len(s2)
 
@@ -28,12 +37,11 @@ def temporal_alignment(
     TC = init_TCmat(s1, s1_len, s2, s2_len)
     traceMat = init_traceMat(s1_len, s2_len)
     # ------ Set dtypes ------
-    s_arr    = np.ascontiguousarray(s.to_numpy(dtype=np.float64))  # converting to matrix
-    H        = np.ascontiguousarray(H, dtype=np.float64)
-    TR       = np.ascontiguousarray(TR, dtype=np.float64)
-    TC       = np.ascontiguousarray(TC, dtype=np.float64)
+    s_arr = np.ascontiguousarray(s.to_numpy(dtype=np.float64))  # converting to matrix
+    H = np.ascontiguousarray(H, dtype=np.float64)
+    TR = np.ascontiguousarray(TR, dtype=np.float64)
+    TC = np.ascontiguousarray(TC, dtype=np.float64)
     traceMat = np.ascontiguousarray(traceMat, dtype=np.int32)
-
 
     # ----- Init return Dat ------
     returnDat_init = np.empty(10)
@@ -45,38 +53,47 @@ def temporal_alignment(
     s1_drugs = np.ascontiguousarray([drug2idx[d] for t, d in s1], dtype=np.int32)
     s2_drugs = np.ascontiguousarray([drug2idx[d] for t, d in s2], dtype=np.int32)
 
-    # TSW_score   
-    start = time.perf_counter()
-    TSWc(s1_times, s1_drugs, s1_len,
-        s2_times, s2_drugs, s2_len,
-        g, T, H, TR, TC, traceMat,
-        s_arr, method)
-    end = time.perf_counter()
-    print(f"Execution time for TSW_score (C): {end - start:.6f} seconds")
+    # TSW_score
+    TSWc(
+        s1_times,
+        s1_drugs,
+        s1_len,
+        s2_times,
+        s2_drugs,
+        s2_len,
+        g,
+        T,
+        H,
+        TR,
+        TC,
+        traceMat,
+        s_arr,
+        method,
+    )
 
     # Find best scoring cell
-    start = time.perf_counter()
-    finalScore, finalIndex, mem_index, mem_score = fbs(
-        H, s1_len, s2_len, mem, verbose
-    )
-    end = time.perf_counter()
-    print(f"Execution time for Find Best Score (C): {end - start:.6f} seconds")
+    finalScore, finalIndex, mem_index, mem_score = fbs(H, s1_len, s2_len, mem, verbose)
 
-    # Align 
-    drug_names = np.array(list(drug2idx.keys()), dtype=object)  
-    start = time.perf_counter()
-    returnDat = aTSW(traceMat, 
-           s1_times, s1_drugs, s1_len, 
-           s2_times, s2_drugs, s2_len, 
-           mem_index, mem_score, drug_names) 
-    end = time.perf_counter()
-    print(f"Execution time for align_TSW (C): {end - start:.6f} seconds")
-    
+    # Align
+    drug_names = np.array(list(drug2idx.keys()), dtype=object)
+    returnDat = aTSW(
+        traceMat,
+        s1_times,
+        s1_drugs,
+        s1_len,
+        s2_times,
+        s2_drugs,
+        s2_len,
+        mem_index,
+        mem_score,
+        drug_names,
+    )
+
     # Reshape return array to account for secondary alignments
     # ------ Exact broadcasting -----
-    returnDat_fin = np.concatenate([returnDat_init, returnDat.ravel()], axis=0) 
+    returnDat_fin = np.concatenate([returnDat_init, returnDat.ravel()], axis=0)
     # ----- Exact format processing -----
     returnDat_fin = returnDat_fin.reshape(len(mem_index) + 1, 10)
     returnDat_fin = pd.DataFrame(returnDat_fin)
-    
+
     return returnDat_fin
