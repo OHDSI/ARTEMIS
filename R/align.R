@@ -65,7 +65,7 @@ align <- function(regimen,
     if (is.na(s)) {
         s <- defaultSmatrix(regimen, drugRec)
     }
-        
+    
     temp_dat <- temporal_alignment(
         regimen_list,
         drugRec,
@@ -96,6 +96,8 @@ align <- function(regimen,
     temp_dat$Regimen_full <- regimen
     temp_dat$DrugRecord_full <- personSeq
     temp_dat$personID <- as.character(personID)
+    temp_dat$Regimen <- unlist(temp_dat$Regimen)
+    temp_dat$DrugRecord <- unlist(temp_dat$DrugRecord)
     
     temp_dat <- temp_dat %>%
         dplyr::filter(!is.na(adjustedS) & !is.na(totAlign)) %>%
