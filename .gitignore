@@ -25,3 +25,4 @@ __pycache__
 .DS_Store
 .Ruserdata*
 .venv*
+/inst/cython/TSW_Package/
