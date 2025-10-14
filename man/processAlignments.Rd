@@ -4,13 +4,7 @@
 \alias{processAlignments}
 \title{Perform post-processing on a data frame of raw alignment results}
 \usage{
-processAlignments(
-  rawOutput,
-  regimenCombine,
-  regimens = "none",
-  writeOut = TRUE,
-  outputName = "Output_Processed"
-)
+processAlignments(rawOutput, regimenCombine, regimens = "none")
 }
 \arguments{
 \item{rawOutput}{An output dataframe produced by generateRawAlignments()}

@@ -14,6 +14,7 @@ Requirements:
 # 2. Build cmd (py-end)
  
 `python setup.py build_ext --inplace`
+`python3 setup.py build_ext --inplace`
 
 This should create a bunch of stuff "."
 

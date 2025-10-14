@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import math as math
-import re
 
 
 def lossFunction(T, t1, t2, method, i, j):
@@ -173,10 +172,6 @@ def find_best_score(H, s1_len, s2_len, mem, verbose):
     mem_index[:, 0] = np.arange(s2_len + 1)
     mem_index[:, 1] = s1_len  # broadcast scalar
 
-    max_idx = np.argmax(mem_score)
-    max_score = mem_score[max_idx]
-    max_index = (max_idx, s1_len)
-
     mem_array = np.asarray(list(zip(mem_score, mem_index)), dtype=object)
     mem_array = mem_array[mem_array[:, 0].argsort()]
 
@@ -205,7 +200,4 @@ def find_best_score(H, s1_len, s2_len, mem, verbose):
     mem_score = mem_score[::-1]
     mem_index = mem_index[::-1]
 
-    finalScore = max_score
-    finalIndex = max_index
-
-    return finalScore, finalIndex, mem_index, mem_score
+    return mem_index, mem_score

@@ -1,6 +1,3 @@
-from re import sub
-
-
 def align_TSW(traceMat, s1, s2, s1_len, s2_len, max_index):
     s1_aligned = ""
     s2_aligned = ""

@@ -9,19 +9,31 @@ extensions = [
         name="TSW_scoreMat",
         sources=["TSW_scoreMat.pyx"],
         include_dirs=[numpy.get_include()],
-        extra_compile_args=["-O3"]
+        extra_compile_args=["-O3"],
     ),
     Extension(
         name="find_best_score",
         sources=["find_best_score.pyx"],
         include_dirs=[numpy.get_include()],
-        extra_compile_args=["-O3"]
+        extra_compile_args=["-O3"],
     ),
     Extension(
         name="align_TSW",
         sources=["align_TSW.pyx"],
         include_dirs=[numpy.get_include()],
-        extra_compile_args=["-O3"]
+        extra_compile_args=["-O3"],
+    ),
+    Extension(
+        name="init_TSW",
+        sources=["init_TSW.pyx"],
+        include_dirs=[numpy.get_include()],
+        extra_compile_args=["-O3"],
+    ),
+    Extension(
+        name="run_TSW",
+        sources=["run_TSW.pyx"],
+        include_dirs=[numpy.get_include()],
+        extra_compile_args=["-O3"],
     ),
 ]
 
@@ -35,6 +47,6 @@ setup(
             "nonecheck": True,
             "cdivision": True,
             "language_level": 3,
-        }
+        },
     ),
 )

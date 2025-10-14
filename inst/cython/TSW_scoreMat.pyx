@@ -36,70 +36,130 @@ cdef inline double lossFunction(double T, double t1, double t2, str method, int 
     return tp
 
 
+cdef double score(
+    double[:, :] s,
+    int x, 
+    int y
+):
+    """
+    Look up the score for (x, y) in the scoring matrix/dict `s`.
+    Returns a float (converted to double).
+    """
+    return float(s[x][y])
+
+
 # ----------------------------
 # Core Scoring Function
 # Will be called with python headers
 # python callable
 # (entrypoint in main)
 # ----------------------------
-cpdef TSW_scoreMat(
-    np.ndarray[np.float64_t, ndim=1] s1_times,
-    np.ndarray[np.int32_t,  ndim=1] s1_drugs,
+cdef TSW_scoreMat(
+    double[:] s1_time,
+    int[:] s1_drugs,
     int s1_len,
-    np.ndarray[np.float64_t, ndim=1] s2_times,
-    np.ndarray[np.int32_t,  ndim=1] s2_drugs,
+    double[:] s2_time,
+    int[:] s2_drugs,
     int s2_len,
     double g,
     double T,
-    np.ndarray[np.float64_t, ndim=2] H,
-    np.ndarray[np.float64_t, ndim=2] TR,
-    np.ndarray[np.float64_t, ndim=2] TC,
-    np.ndarray[np.int32_t,  ndim=2] traceMat,
-    np.ndarray[np.float64_t, ndim=2] s,
+    double[:, :] H,
+    double[:, :] TR,
+    double[:, :] TC,
+    int[:, :] traceMat,
+    double[:, :] s,
     str method
 ):
-    cdef int i, j, traceVal
-    cdef double tp, tpx, tpy, score_match, Hup, Hmid, Hbot, penalty
+    """
+    Cython-accelerated version with separated time and drug lists.
+    Inputs:
+        s1_time, s2_time : float or double arrays/lists
+        s1_drugs, s2_drugs : lists of strings or comparable objects
+        H, TR, TC, traceMat : Python nested lists (matrices)
+    """
+    cdef int i, j, k
+    cdef double tp = 0.0
+    cdef double tpx, tpy
+    cdef double s2_time_i, s1_time_j
+    cdef object score_match, Hup, Hmid, Hbot
+    cdef int traceVal
+    cdef double matVal
 
-    for i in range(1, s2_len + 1):
-        for j in range(1, s1_len + 1):
+    i = 1
+    while i < s2_len + 1:
+        j = 1
+        while j < s1_len + 1:
+            s2_time_i = s2_time[i - 1]
+            s1_time_j = s1_time[j - 1]
 
-            if 1 < i < s2_len and s1_times[j-1] == 0.0 and s2_times[i-1] == 0.0:
-                if s1_drugs[j-1] == s2_drugs[i-1]:
-                    if j == 1 and s2_times[i-1] == 0.0:
-                        continue
-                    elif j == s1_len and s2_times[i-1] == 0.0:
-                        if s2_times[i] == 0.0:
+            # Dynamic re-ordering
+            if i > 1 and i < s2_len:
+                if min(s1_time_j, s2_time_i) == 0.0:
+                    if s1_drugs[j - 1] == s2_drugs[i - 1]:
+                        # Start of regimen case
+                        if j == 1 and s2_time_i == 0.0:
+                            k = i - 1
+                            tmp = s2_drugs[i - 1]
+                            s2_drugs[i - 1] = s2_drugs[k - 1]
+                            s2_drugs[k - 1] = tmp
+                            i -= 1
                             continue
 
+                        # End of regimen case
+                        elif j == s1_len and s2_time_i == 0.0:
+                            k = i + 1
+                            if s2_time[k - 1] == 0.0:
+                                tmp = s2_drugs[i - 1]
+                                s2_drugs[i - 1] = s2_drugs[k - 1]
+                                s2_drugs[k - 1] = tmp
+                                i -= 1
+                                continue
+
+            # Time penalty
             if i == 1 and j == 1:
                 tp = 0.0
             else:
-                tpx = s2_times[i - 1] + TR[i - 1, j - 1]
-                tpy = s1_times[j - 1] + TC[i - 1, j - 1]
-                tp = lossFunction(T, tpx, tpy, method, i, j)
+                tpx = s2_time_i + float(TR[i - 1][j - 1])
+                tpy = s1_time_j + float(TC[i - 1][j - 1])
+                tp = float(lossFunction(T, tpx, tpy, method, i, j))
 
-            score_match = s[s1_drugs[j - 1], s2_drugs[i - 1]]
+            # Score
+            score_match = score(s, s1_drugs[j - 1], s2_drugs[i - 1])
 
-            Hup = H[i - 1, j - 1] + score_match - tp
-            Hmid = H[i - 1, j] - g
-            Hbot = H[i, j - 1] - g
+            # Candidate scores
+            Hup = H[i - 1][j - 1] + score_match - tp
+            Hmid = H[i - 1][j] - g
+            Hbot = H[i][j - 1] - g
 
-            H[i, j] = fmax(0.0, fmax(Hup, fmax(Hmid, Hbot)))
-            traceVal = [0.0, Hup, Hmid, Hbot].index(H[i, j])
-            traceMat[i, j] = traceVal
+            # Select move
+            H[i][j] = max([0, Hup, Hmid, Hbot])
+            traceMat[i][j] = [0, Hup, Hmid, Hbot].index(H[i][j])
 
+            traceVal = int(traceMat[i][j])
+            matVal = float(H[i][j])
+
+            # DIAGONAL
             if traceVal == 1:
-                TR[i, j] = 0.0
-                TC[i, j] = 0.0
+                TR[i][j] = 0
+                TC[i][j] = 0
+            # HORIZONTAL
             elif traceVal == 2:
-                TR[i, j] = TR[i - 1, j] + s2_times[i - 1]
-                TC[i, j] = TC[i - 1, j]
+                TR[i][j] = TR[i - 1][j] + s2_time_i
+                TC[i][j] = TC[i - 1][j]
+            # VERTICAL
             elif traceVal == 3:
-                TR[i, j] = TC[i, j - 1]
-                TC[i, j] = TC[i, j - 1] + s1_times[j - 1]
+                TR[i][j] = TC[i][j - 1]
+                TC[i][j] = TC[i][j - 1] + s1_time_j
 
+            # Edge penalty
             if j == s1_len and i < s2_len:
-                if s2_times[i] < s1_times[0]:
-                    penalty = lossFunction(T, s2_times[i], s1_times[0], method, i, j)
-                    H[i, j] = fmax(H[i, j] - penalty, 0.0)
+                if s2_time[i] < s1_time[0]:
+                    H[i][j] = max(
+                        H[i][j]
+                        - lossFunction(T, s2_time[i], s1_time[0], method, i, j),
+                        0,
+                    )
+
+            j += 1
+        i += 1
+

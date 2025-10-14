@@ -3,7 +3,6 @@
 export("%>%")
 export("%m+%")
 export(.onLoad)
-export(align)
 export(calculateEras)
 export(combineOverlaps)
 export(createDrugDF)

@@ -28,13 +28,13 @@ cdef inline int count_trailing_gaps(str seq):
     return count
 
 
-def aTSW (
-    np.ndarray[np.int32_t, ndim=2] traceMat,
-    np.ndarray[np.float64_t, ndim=1] s1_times,
-    np.ndarray[np.int32_t,  ndim=1] s1_drugs,
+cdef aTSW (
+    int[:, :] traceMat,
+    double[:] s1_times,
+    int[:] s1_drugs,
     int s1_len,
-    np.ndarray[np.float64_t, ndim=1] s2_times,
-    np.ndarray[np.int32_t,  ndim=1] s2_drugs,
+    double[:] s2_times,
+    int[:] s2_drugs,
     int s2_len,
     np.ndarray[np.int32_t, ndim=2] mem_index,
     np.ndarray[np.float64_t, ndim=1] mem_score,

@@ -13,9 +13,7 @@ generateRawAlignments(
   verbose = 0,
   mem = -1,
   removeOverlap = -1,
-  method = "PropDiff",
-  writeOut = TRUE,
-  outputName = "Output"
+  method = "PropDiff"
 )
 }
 \arguments{
