@@ -7,30 +7,79 @@ import os
 from dataclasses import dataclass
 import shutil
 
-MY_LIB = "JAKE"  
+# This should be install directory
+# devtools::install_github("OHDSI/ARTEMIS")
 
-@dataclass  # This is just a decorator for boilerplate stuff
+# During install_github step this happens:
+# inst/cython/bootstrap_env.py  →  <R-LIB>/ARTEMIS/cython/bootstrap_env.py
+# inst/cython/setup.py          →  <R-LIB>/ARTEMIS/cython/setup.py
+
+MY_LIB = "ARTEMIS"  
+
+@dataclass  # Just a decorator for boilerplate stuff
 class EnvInfo:
     os_name: str
     arch: str
     py_version: str
     py_exec: str
 
+
+class BootstrapGraph:
+    """Chain of responsivility"""
+    def __init__(self):
+        self.phases = {}         # name → (deps, func)
+        self.completed = set()   # name → already executed
+
+    def add(self, name, deps, func):
+        self.phases[name] = (deps, func)
+
+    def run(self, name):
+        if name in self.completed:
+            return
+
+        if name not in self.phases:
+            raise ValueError(f"Phase '{name}' not registered")
+
+        deps, func = self.phases[name]
+        for dep in deps:
+            self.run(dep)
+
+        print(f"[{MY_LIB}] Running phase: {name}")
+        func()
+        self.completed.add(name)
+
+
+class AlreadyBuilt(Exception): pass
+
 class BuildBootstrap:
     def __init__(self, package_root: str, cython_sources=None):
         self.package_root = pathlib.Path(package_root).resolve()
         self.cython_sources = cython_sources or []
-        self.env_dir = self.package_root / ".build_env"
+        self.env_dir = pathlib.Path(sys.prefix)  # uses reticulate's active virtualenv
         self.env = self._detect_env()
-        self._print_env()
-        self._ensure_env()
-        self._install_build_tools()
-        if self.cython_sources:
-            self._build_cython_sources()
-        self._env_breakdown()
-        self._cleanup_env()  
-        print(f"[{MY_LIB}] ✅ Build completed and environment safely removed.")
 
+        bg = BootstrapGraph()
+        bg.add("ensure_env", [], self._ensure_env)
+        bg.add("site_packages_dir", ["ensure_env"], self._set_site_packages_dir)
+        bg.add("site_packages_var", ["site_packages_dir"], self._set_site_packages_var)
+        bg.add("check_build", ["site_packages_dir"], self._already_built)
+        bg.add("install", ["check_build"], self._install_build_tools)
+
+        if self.cython_sources:
+            bg.add("compile", ["install"], self._build_cython_sources)
+            bg.add("copy", ["compile"], self._copy_so_outputs)
+            bg.add("load", ["copy"], self._write_init_py)
+            top_phase = "load"
+        else:
+            top_phase = "install"
+
+        try:
+            bg.run(top_phase)
+        except AlreadyBuilt:
+            pass  # Exit quietly
+
+        print(f"[{MY_LIB}] ✅ Build completed.")
+    
     # ---------- Detect ----------
     def _detect_env(self) -> EnvInfo:
         return EnvInfo(
@@ -56,82 +105,78 @@ class BuildBootstrap:
 
     @property
     def _env_python(self) -> str:
-        exe = "python.exe" if self.env.os_name.startswith("win") else "python"
-        return str(self.env_dir / ("Scripts" if "win" in self.env.os_name else "bin") / exe)
+        # exe = "python.exe" if self.env.os_name.startswith("win") else "python"
+        # return str(self.env_dir / ("Scripts" if "win" in self.env.os_name else "bin") / exe)
+        return sys.executable  # directly reticulate's Python
 
+    def _set_site_packages_dir(self):
+        """Single directory to store all python site package"""
+        site_packages_dir = pathlib.Path(subprocess.check_output([
+            self._env_python, "-c",
+            "import site; print(site.getsitepackages()[0])"
+        ]).decode().strip())
+
+        self.site_packages_dir = site_packages_dir 
+
+    def _set_site_packages_var(self):
+        os.environ['TSW_PACKAGE_PATH'] = str(self.site_packages_dir)
+
+    def _already_built(self) -> bool:
+        target_dir = self.site_packages_dir / "TSW_Package"
+        if not target_dir.exists():
+            return False
+
+        ext = ".pyd" if self.env.os_name.startswith("win") else ".so"
+        files = list(target_dir.glob(f"*{ext}"))
+        compiled = len([f for f in files if f.stat().st_size > 4096]) >= 3
+        if compiled:
+            print(f"[{MY_LIB}] Already built. Skipping rebuild.")
+            raise AlreadyBuilt()
+        
     # ---------- Install base tools ----------
     def _install_build_tools(self):
-        print(f"[{MY_LIB}] Installing build tools (setuptools, wheel, Cython)...")
+        # TODO: No internet for some users!
+        print(f"[{MY_LIB}] Installing build tools and dependencies (setuptools, wheel, Cython, numpy, pandas)...")
         subprocess.run(
-            [self._env_python, "-m", "pip", "install", "--quiet", "--upgrade", "setuptools", "wheel", "Cython"],
+            [
+                self._env_python, "-m", "pip", "install", "--quiet", "--upgrade",
+                "setuptools",
+                "wheel",
+                "Cython",
+                "numpy",
+                "pandas",
+                "tqdm"
+            ],
             check=True,
         )
+        print(f"[{MY_LIB}] ✅ Build dependencies installed successfully.")
 
-   # ---------- Build Cython modules ----------
+
+    # ---------- Build Cython modules ----------
     def _build_cython_sources(self):
-        """Build all .pyx modules into compiled .so/.pyd using the local setup.py."""
-        print(f"[{MY_LIB}] Compiling all Cython modules in directory...")
+        """Build all .pyx modules into compiled .so/.pyd using setup.py in cython/."""
+        print(f"[{MY_LIB}] Compiling Cython modules")
 
-        import subprocess, shutil, os
-
-        # locate setup.py
-        setup_path = self.package_root / "setup.py"
+        cython_dir = self.package_root / "cython" # temp mirror
+        setup_path = cython_dir / "setup.py"
         if not setup_path.exists():
             raise FileNotFoundError(f"[{MY_LIB}] setup.py not found at {setup_path}")
 
-        # clean up old build artifacts
-        for pattern in ["TSW_Package", "*.so", "*.c", "*.o", "build"]:
-            subprocess.run(f"rm -rf {pattern}", shell=True, cwd=self.package_root)
+        # # Clean and rebuild 
+        # for pattern in ["TSW_Package", "*.so", "*.c", "*.o", "build"]:
+        #     subprocess.run(f"rm -rf {pattern}", shell=True, cwd=cython_dir)
 
-        # recreate the output directory
-        os.makedirs(self.package_root / "TSW_Package", exist_ok=True)
+        target_dir = pathlib.Path(self.site_packages_dir) / "TSW_Package"
+        os.makedirs(target_dir, exist_ok=True)
 
-        # ensure numpy is available in the build env
+        # Compile Cython using the venv's python
         subprocess.run(
-            [self._env_python, "-m", "pip", "install", "--quiet", "numpy"],
+            [self._env_python, str(setup_path), "build_ext", "--inplace"],
+            cwd=cython_dir,
             check=True
         )
 
-        # build Cython modules
-        try:
-            subprocess.run(
-                [self._env_python, str(setup_path), "build_ext", "--inplace"],
-                cwd=self.package_root,
-                check=True,
-            )
-
-            # copy results into TSW_Package
-            for so_file in self.package_root.glob("*.so"):
-                shutil.copy(so_file, self.package_root / "TSW_Package")
-            init_py = self.package_root / "__init__.py"
-            if init_py.exists():
-                shutil.copy(init_py, self.package_root / "TSW_Package")
-
-            # final cleanup
-            subprocess.run("rm -rf build *.c", shell=True, cwd=self.package_root)
-
-            print(f"[{MY_LIB}] ✅ All Cython modules compiled and packaged successfully.")
-        except subprocess.CalledProcessError as e:
-            raise RuntimeError(f"[{MY_LIB}] ❌ Cython build failed: {e}")
-
-
-    # ---------- Run test main --------------
-    def _test_main(self):
-        """Optionally run a simple main test after build."""
-        import importlib
-
-        print(f"[{MY_LIB}] Running optional main.py test...")
-        try:
-            main_module = importlib.import_module("main")
-            if hasattr(main_module, "main"):
-                main_module.main()
-                print(f"[{MY_LIB}] ✅ main.py executed successfully.")
-            else:
-                print(f"[{MY_LIB}] ⚠️ main.py has no 'main()' function.")
-        except ModuleNotFoundError:
-            print(f"[{MY_LIB}] ⚠️ No main.py found in current directory.")
-        except Exception as e:
-            print(f"[{MY_LIB}] ❌ main.py test failed: {e}")
+        print(f"[{MY_LIB}] ✅ Cython compilation complete.")
 
 
     # ---------- Breakdown summary ----------
@@ -158,13 +203,22 @@ class BuildBootstrap:
         print("=" * 60)
         print(f"[{MY_LIB}] Build complete and environment ready.\n")
 
-    # ---------- Cleanup ----------
-    def _cleanup_env(self):
-        """Remove the temporary virtual environment used for building."""
-        if self.env_dir.exists():
-            print(f"[{MY_LIB}] Cleaning up temporary build environment: {self.env_dir}")
-            try:
-                shutil.rmtree(self.env_dir)
-                print(f"[{MY_LIB}] ✅ Removed build environment.")
-            except Exception as e:
-                print(f"[{MY_LIB}] ⚠️ Could not fully remove build environment: {e}")
+    def _copy_so_outputs(self):
+        """Copy .so/.pyd files into TSW_Package/"""
+        build_dir = self.package_root / "cython"
+        target_dir = self.site_packages_dir / "TSW_Package"
+        print(f"[{MY_LIB}] Site package dir used: {target_dir}")
+        target_dir.mkdir(exist_ok=True)
+
+        for ext in ["*.so", "*.pyd"]:
+            for compiled_file in build_dir.glob(ext):
+                shutil.copy2(compiled_file, target_dir)
+                print(f"[{MY_LIB}] Copied: {compiled_file.name} → TSW_Package")
+
+    def _write_init_py(self):
+        """Write __init__.py pointing to Cython entrypoint"""
+        init_path = self.site_packages_dir / "TSW_Package" / "__init__.py"
+        with open(init_path, "w") as f:
+            f.write("from .run_TSW import align_patients_regimens_fast\n")
+            f.write("__all__ = [align_patients_regimens_fast,]\n")
+        print(f"[{MY_LIB}] ✅ __init__.py written for TSW_Package")

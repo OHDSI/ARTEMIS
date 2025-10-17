@@ -22,10 +22,25 @@ to form the basic regimen data used in testing.
 
 ## Installation
 
+> 💡 _Before installing ARTEMIS, make sure there is a working Python (>=3.12) avilable in your PATH_
+ 
+    system("python --version", intern = TRUE)
+
+
+> 💡 _Also, make sure you have R's devtools library. **Note that you might also need other sub-depndencies during devtools installation: "gert", "usethis", "devtools", "png", "tidyverse", "xml2", "ggtext", "viridis"._
+    
+    install.packages("devtools")
+
+
 ARTEMIS can presently be installed directly from GitHub:
 
-    # install.packages("devtools")
+    
     devtools::install_github("OHDSI/ARTEMIS")
+
+### Reticulate library
+
+> 💡 _You do **not** need to manually setup reticulate. This is an info section._
+
 
 ARTEMIS relies on a python back-end via
 [reticulate](https://rstudio.github.io/reticulate/) and depending on

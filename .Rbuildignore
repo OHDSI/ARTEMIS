@@ -15,3 +15,8 @@ Output.csv
 Output_Processed.csv
 ^doc$
 ^Meta$
+^\.Ruserdata*$
+^\.Rproj.user$
+^\.git$
+^\.venv$
+^__pycache__$

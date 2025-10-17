@@ -1,0 +1,78 @@
+
+>>R
+
+R version 4.5.1 (2025-06-13) -- "Great Square Root"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[ARTEMIS-autoload] Custom lib path set via .Rprofile
+> library("ARTEMIS")
+[ARTEMIS-boot] Initializing Python backend...
+virtualenv: /home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS-fresh/ARTEMIS/.r-reticulate
+[ARTEMIS-boot] Environment path: /home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS-fresh/ARTEMIS/.r-reticulate 
+[ARTEMIS-boot] Python version to use: /home/stev/miniconda3/bin/python 
+python:         /home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS-fresh/ARTEMIS/.r-reticulate/bin/python
+libpython:      /home/stev/miniconda3/lib/libpython3.13.so
+pythonhome:     /home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS-fresh/ARTEMIS/.r-reticulate:/home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS-fresh/ARTEMIS/.r-reticulate
+version:        3.13.7 | packaged by Anaconda, Inc. | (main, Sep  9 2025, 19:59:03) [GCC 11.2.0]
+numpy:          /home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS-fresh/ARTEMIS/.r-reticulate/lib/python3.13/site-packages/numpy
+numpy_version:  2.3.4
+
+NOTE: Python version was forced by use_python() function
+[ARTEMIS-boot] Using Python: /home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS-fresh/ARTEMIS/.r-reticulate/bin/python
+tsw_dir: /home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS-fresh/ARTEMIS/.r-reticulate/lib/python3.13/site-packages 
+is_built: TRUE 
+[ARTEMIS-boot] ✅ Cython build found — skipping bootstrap.
+------------------------------------------------------------ 
+ [ARTEMIS-boot] C files:
+ /home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS-fresh/ARTEMIS/.r-reticulate/lib/python3.13/site-packages/TSW_Package/align_TSW.cpython-313-x86_64-linux-gnu.so
+/home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS-fresh/ARTEMIS/.r-reticulate/lib/python3.13/site-packages/TSW_Package/find_best_score.cpython-313-x86_64-linux-gnu.so
+/home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS-fresh/ARTEMIS/.r-reticulate/lib/python3.13/site-packages/TSW_Package/init_TSW.cpython-313-x86_64-linux-gnu.so
+/home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS-fresh/ARTEMIS/.r-reticulate/lib/python3.13/site-packages/TSW_Package/run_TSW.cpython-313-x86_64-linux-gnu.so
+/home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS-fresh/ARTEMIS/.r-reticulate/lib/python3.13/site-packages/TSW_Package/TSW_scoreMat.cpython-313-x86_64-linux-gnu.so 
+Is build:  TRUE 
+[ARTEMIS-boot] Using Cython version of the alignment algorithm.
+[ARTEMIS-boot] ✅ align_patients_regimens (Cython) loaded successfully
+[ARTEMIS-boot] ▶ Running both mains for cross-check...
+Processing patients: 100%|██████████████████████████████████████████████████| 1/1 [00:00<00:00, 855.98it/s]
+                             Regimen  \
+0     14.pemetrexed;__;14.pemetrexed   
+1  14.pemetrexed;__;__;14.pemetrexed   
+2  14.pemetrexed;__;14.pemetrexed;__   
+
+                                          DrugRecord     Score adjustedS  \
+0             0.pemetrexed;0.cisplatin;21.pemetrexed  0.966667  0.483333   
+1  21.pemetrexed;0.cisplatin;42.cisplatin;0.pemet...  0.866667  0.433333   
+2  0.pemetrexed;0.cisplatin;21.pemetrexed;0.cispl...  0.566667  0.283333   
+
+  regimen_Start regimen_End drugRec_Start drugRec_End Aligned_Seq_len  \
+0             1           2             1           3               3   
+1             1           2             3           6               4   
+2             1           2             1           3               4   
+
+  totAlign   regName                  Regimen_full personID  \
+0        2  Regimen1  14.pemetrexed;14.pemetrexed;    test1   
+1        2  Regimen1  14.pemetrexed;14.pemetrexed;    test1   
+2        2  Regimen1  14.pemetrexed;14.pemetrexed;    test1   
+
+                                     DrugRecord_full  
+0  0.cisplatin;0.pemetrexed;21.cisplatin;0.pemetr...  
+1  0.cisplatin;0.pemetrexed;21.cisplatin;0.pemetr...  
+2  0.cisplatin;0.pemetrexed;21.cisplatin;0.pemetr...  
+Cython module loaded successfully.
+> 
+> 

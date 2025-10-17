@@ -23,15 +23,10 @@ main_test.py
 *.pyc
 .tmp
 __pycache__
-<<<<<<< HEAD
-.DS_Store
 .Ruserdata*
 .venv*
-=======
 /inst/cython/TSW_Package
 /inst/cython/build
-
 *.so
 *.o
 *.c
->>>>>>> cae3ac7dcfbbcd99b2c3527ce77feed5749b650f
