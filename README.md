@@ -37,6 +37,17 @@ ARTEMIS can presently be installed directly from GitHub:
     
     devtools::install_github("OHDSI/ARTEMIS")
 
+For safe installation run
+    export ARTEMIS_DIR_PATH="ARTEMIS"
+    export DEVTOOLS_DIR_PATH="<PATH/TO/R-DEVTOOLS-REQUIREMENTS>"
+    export ARTEMIS_PY_VERSION="<PATH/TO/Py (v3.12+)>"
+    Rscript compile_and_run.R
+
+To test the installation call:
+    R_LIBS_USER=$(pwd)/ARTEMIS \
+    TEST_ARTEMIS_BUILD=true \
+    Rscript -e "library('ARTEMIS')
+
 ### Reticulate library
 
 > 💡 _You do **not** need to manually setup reticulate. This is an info section._

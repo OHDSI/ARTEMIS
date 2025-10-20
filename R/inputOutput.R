@@ -32,6 +32,8 @@ getConDF <- function(connectionDetails, json, name, cdmSchema, writeSchema){
 
   subject_ids <- DatabaseConnector::dbGetQuery(conn = connection,
                                                statement = paste("SELECT subject_id FROM ",writeSchema,".",name,sep=""))
+  
+  if(nrow(subject_ids) == 0) stop("The target cohort has no subjects")
 
   sql_template <- "
 WITH filtered_drug_exposure AS (

@@ -1,4 +1,24 @@
 .onLoad <- function(libname, pkgname) {
+  # ----------- READ USER'S ENV VARS -----------
+
+  # Enable command‑line override but default to FALSE
+  if (Sys.getenv("TEST_ARTEMIS_BUILD", unset = "") == "") {
+    Sys.setenv(TEST_ARTEMIS_BUILD = "FALSE")
+  }
+
+  # Resolve paths from ENV or use fallback
+  ARTEMIS_DIR_PATH <- Sys.getenv("ARTEMIS_DIR_PATH", unset = "./ARTEMIS")
+  DEVTOOLS_DIR_PATH <- Sys.getenv("DEVTOOLS_DIR_PATH", unset = ".Ruserdata1")
+  ARTEMIS_PY_VERSION <- Sys.getenv("ARTEMIS_PY_VERSION", unset = Sys.which("python"))
+
+  # Adjust .libPaths()
+  .libPaths(c(
+    normalizePath(ARTEMIS_DIR_PATH, mustWork = FALSE),
+    normalizePath(DEVTOOLS_DIR_PATH, mustWork = FALSE),
+    .libPaths()
+  ))
+
+  message("[ARTEMIS-ENV-SETUP] Done.")
 
 
   message("[ARTEMIS-boot] Initializing Python backend...")
@@ -7,13 +27,11 @@
 
   # ----------------- Python runtime -----------------
   # Find what python executable R would see on PATH
-  python_path <- Sys.which("python")
+  python_path = ARTEMIS_PY_VERSION
 
   if (!nzchar(python_path)) {
     stop("❌ No 'python' binary found on PATH. Install Python 3.12+ first.")
   }
-
-
 
   # --------------- Ensure reticulate is installed and loaded ------------------
   if (!requireNamespace("reticulate", quietly = TRUE)) {
@@ -145,43 +163,81 @@
   }
     
   # ------------------------------------------
-  # RUNTIME BLOCK ( Test )
+  # RUNTIME BLOCK
   # ------------------------------------------
 
   # --------------- [Logging] Show compiled C code -------------------------------
-  cat(strrep("-", 60), "\n", "[ARTEMIS-boot] C files:\n", paste(so_files, collapse = "\n"), "\n")
-
+  # cat(strrep("-", 60), "\n", "[ARTEMIS-boot] C files:\n", paste(so_files, collapse = "\n"), "\n")
   cat("Is build: ", is_built, "\n")
+  ns <- asNamespace(pkgname)
+  # if (is_built) {
+  #   cat("[ARTEMIS-boot] Using Cython version of the alignment algorithm.\n")
+  #   py_functions <- reticulate::import_from_path("main", path = file.path(package_root, "cython"))
+  #   assign("align_patients_regimens", py_functions$align_patients_regimens, envir = ns)
+  #   message("[ARTEMIS-boot] ✅ align_patients_regimens (Cython) loaded successfully")
+  # } else {
+  #   cat("[ARTEMIS-boot] Using fallback pure Python version of the alignment algorithm.\n")
+  #   py_functions <- reticulate::import_from_path("main", path = file.path(package_root, "python"))
+  #   assign("align_patients_regimens", py_functions$align_patients_regimens, envir = ns)
+  #   message("[ARTEMIS-boot] ✅⚠️ align_patients_regimens (Python) loaded — Cython build not found")
+  # }
+
   if (is_built) {
     cat("[ARTEMIS-boot] Using Cython version of the alignment algorithm.\n")
-    py_functions <- reticulate::import_from_path("main", path = file.path(package_root, "cython"))
-    assign("align_patients_regimens", py_functions$align_patients_regimens, envir = parent.env(environment()))
-    packageStartupMessage("[ARTEMIS-boot] ✅ align_patients_regimens (Cython) loaded successfully")
+    py_functions <- tryCatch(
+      reticulate::import_from_path("main", path = file.path(package_root, "cython")),
+      error = function(e) {
+        stop("[ARTEMIS-boot] ❌ Failed to import Cython main module: ", e$message)
+      }
+    )
+
+    if (is.null(py_functions$align_patients_regimens)) {
+      stop("[ARTEMIS-boot] [X] align_patients_regimens not found in Cython main module")
+    }
+
+    assign("align_patients_regimens", py_functions$align_patients_regimens, envir = ns)
+    message("[ARTEMIS-boot] ✅ align_patients_regimens (Cython) loaded successfully")
+
   } else {
     cat("[ARTEMIS-boot] Using fallback pure Python version of the alignment algorithm.\n")
-    py_functions <- reticulate::import_from_path("main", path = file.path(package_root, "python"))
-    assign("align_patients_regimens", py_functions$align_patients_regimens, envir = parent.env(environment()))
-    packageStartupMessage("[ARTEMIS-boot] ✅⚠️ align_patients_regimens (Python) loaded — Cython build not found")
+    py_functions <- tryCatch(
+      reticulate::import_from_path("main", path = file.path(package_root, "python")),
+      error = function(e) {
+        stop("[ARTEMIS-boot] [X] Failed to import Python main module: ", e$message)
+      }
+    )
+
+    if (is.null(py_functions$align_patients_regimens)) {
+      stop("[ARTEMIS-boot] [X] align_patients_regimens not found in Python main module")
+    }
+
+    assign("align_patients_regimens", py_functions$align_patients_regimens, envir = ns)
+    message("[ARTEMIS-boot] ✅⚠️ align_patients_regimens (Python) loaded — Cython build not found")
   }
 
-  # TODO - add py_functions@main calls...
-  # Full Package
+  # ------------------ TEST ----------------------------
+  # Reading env var to trigger test
+  TRIGGER_TEST = Sys.getenv("TEST_ARTEMIS_BUILD")
+
+  if (TRIGGER_TEST) {
+    # Full Package
     cy_path <- file.path(package_root, "cython")
-    # py_path <- file.path(package_root, "python")
+    py_path <- file.path(package_root, "python")
 
     cy <- reticulate::import_from_path("main", path = cy_path)
-    # py <- reticulate::import_from_path("main", path = py_path)
+    py <- reticulate::import_from_path("main", path = py_path)
 
     cat("[ARTEMIS-boot] ▶ Running both mains for cross-check...\n")
 
     df_cy <- cy$main()
-    # df_py <- py$main()
+    df_py <- py$main()
 
     # Convert to R data frames for comparison
     r_cy <- reticulate::py_to_r(df_cy)
-    # r_py <- reticulate::py_to_r(df_py)
+    r_py <- reticulate::py_to_r(df_py)
 
-    # identical_check <- isTRUE(all.equal(r_cy, r_py, tolerance = 1e-8))
-    # cat("[ARTEMIS-boot] ✅ Output consistency between Cython and Python:", identical_check, "\n")
+    identical_check <- isTRUE(all.equal(r_cy, r_py, tolerance = 1e-8))
+    cat("[ARTEMIS-boot] ✅ Output consistency between Cython and Python:", identical_check, "\n")
+  }
 
 }

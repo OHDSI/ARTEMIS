@@ -19,29 +19,49 @@ ARTEMIS provides an interface for utilizing a modified Temporal Smith-Waterman (
 
 ## Installation
 
+> 💡 _Before installing ARTEMIS, make sure there is a working Python (>=3.12) avilable in your PATH_
+ 
+    system("python --version", intern = TRUE)
+
+
+> 💡 _Also, make sure you have R's devtools library. **Note that you might also need other sub-depndencies during devtools installation: "gert", "usethis", "devtools", "png", "tidyverse", "xml2", "ggtext", "viridis"._
+    
+    install.packages("devtools")
+
+
 ARTEMIS can presently be installed directly from GitHub:
 
-``` r
-# install.packages("devtools")
-devtools::install_github("OHDSI/ARTEMIS")
-```
+    
+    devtools::install_github("OHDSI/ARTEMIS")
 
-ARTEMIS relies on a python back-end via [reticulate](https://rstudio.github.io/reticulate/) and depending on your reticulate settings, system and environment, you may need to run the following commands before loading the package:
 
-``` r
-reticulate::py_install("numpy")
-reticulate::py_install("pandas")
-```
+To test the installation call:
 
-If you do not presently have reticulate or python3.12 installed you may first need to run the following commands to ensure that reticulate can access a valid python install on your system:
+    TEST_ARTEMIS_BUILD=true Rscript -e "library('ARTEMIS')"
 
-``` r
-install.packages("reticulate")
-library(reticulate)
-```
+### Reticulate library
 
-This will prompt reticulate to install python, create a local virtualenv called "r-reticulate" and, finally, set this virtual environment as the local environment for use when running python via R through reticulate.
+> 💡 _You do **not** need to manually setup reticulate. This is an info section._
 
+
+ARTEMIS relies on a python back-end via
+[reticulate](https://rstudio.github.io/reticulate/) and depending on
+your reticulate settings, system and environment, you may need to run
+the following commands before loading the package:
+
+    reticulate::py_install("numpy")
+    reticulate::py_install("pandas")
+
+If you do not presently have reticulate or python3.12 installed you may
+first need to run the following commands to ensure that reticulate can
+access a valid python install on your system:
+
+    install.packages("reticulate")
+    library(reticulate)
+
+This will prompt reticulate to install python, create a local virtualenv
+called “r-reticulate” and, finally, set this virtual environment as the
+local environment for use when running python via R through reticulate.
 
 ## Usage
 

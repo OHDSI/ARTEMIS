@@ -1,10 +1,18 @@
 # ============================================================
-#  Cross-Platform Installer for ARTEM
+#  Cross-Platform Installer for ARTEMIS
 
 # ============================================================
 
-R_PKG_PATH <- ".Ruserdata-ARTEMIS-fresh"
-INSTALL_TOOLS <- ".Ruserdata1"
+# Note to user, see README (update -TODO)
+# User exports path to new ARTEMIS_DIR_PATH
+# Breaks if not set OR uses a default
+# Use exports DEVTOOLS_DIR_PATH need to exists - and OS/architecture dependent setup
+# Uses should export PYTHON to use as well
+# Used by reticulate and controls versioning
+# Fallsback to: python_path <- Sys.which("python")
+R_PKG_PATH <- Sys.getenv("ARTEMIS_DIR_PATH")
+INSTALL_TOOLS <- Sys.getenv("DEVTOOLS_DIR_PATH")
+
 START_FRESH <- FALSE
 
 # Reinitialize
@@ -60,12 +68,11 @@ if (!requireNamespace("devtools", quietly = TRUE, lib.loc = INSTALL_TOOLS)) {
   stop("devtools not found in ", INSTALL_TOOLS, ". Run setup first.")
 }
 
+library(devtools, lib.loc = INSTALL_TOOLS)
 #  ============================================================
 # Uncomment for local install
-library(devtools, lib.loc = INSTALL_TOOLS)
-devtools::install(".")
+# devtools::install(".")
 
-#  ============================================================
-# Uncomment for git install
-#  GitHub install for production version:
-#  devtools::install_github("OHDSI/ARTEMIS", lib = R_PKG_PATH)
+# ============================================================
+# Uncomment for GitHub install:
+ devtools::install_github("OHDSI/ARTEMIS@ss-wrap/sn-cython2", lib = R_PKG_PATH)
