@@ -1,5 +1,6 @@
 .onLoad <- function(libname, pkgname) {
-  # ----------- READ USER'S ENV VARS -----------
+  
+  # ----------- EVN SETUP BLOCK -----------
 
   # Enable command‑line override but default to FALSE
   if (Sys.getenv("TEST_ARTEMIS_BUILD", unset = "") == "") {
@@ -104,7 +105,6 @@
     ))
   }
 
- 
   # ------------- Lock the interpreter path for both build and runtime -----------
   py_exec <- cfg$python
   message(paste("[ARTEMIS-boot] Using Python:", py_exec))
@@ -161,6 +161,38 @@
   } else {
     message("[ARTEMIS-boot] ✅ Cython build found — skipping bootstrap.")
   }
+
+  # ------------ Add Default .Rprofile ---------------------------------------
+
+  rprofile_path <- file.path(libname, ".Rprofile")
+
+  if (!file.exists(rprofile_path)) {
+    message("[ARTEMIS-boot] Creating default .Rprofile in: ", rprofile_path)
+
+    rprofile_lines <- c(
+      "# -------- Default ARTEMIS .Rprofile (user can edit this) --------",
+      "# Enables cmd overrides",
+      'if (Sys.getenv("TEST_ARTEMIS_BUILD", unset = "") == "") {',
+      '  Sys.setenv(TEST_ARTEMIS_BUILD = "FALSE")',
+      '}',
+      "# Resolve paths from ENV or use fallback",
+      'Sys.setenv(ARTEMIS_DIR_PATH = normalizePath(getwd()))',
+      'ARTEMIS_DIR_PATH <- Sys.getenv("ARTEMIS_DIR_PATH")', 
+      'DEVTOOLS_DIR_PATH <- Sys.getenv("DEVTOOLS_DIR_PATH", unset = ".Ruserdata1")',
+      'ARTEMIS_PY_VERSION <- Sys.getenv("ARTEMIS_PY_VERSION", unset = Sys.which("python"))',
+      ".libPaths(c(",
+      "  normalizePath(ARTEMIS_DIR_PATH, mustWork = FALSE),",
+      "  normalizePath(DEVTOOLS_DIR_PATH, mustWork = FALSE),",
+      "  .libPaths()",
+      "))",
+      'message("[ARTEMIS-env-setup] Custom lib path set via .Rprofile")'
+    )
+
+    writeLines(rprofile_lines, con = rprofile_path)
+  } else {
+    message("[ARTEMIS-boot] .Rprofile already exists; not overwriting.")
+  }
+
     
   # ------------------------------------------
   # RUNTIME BLOCK
