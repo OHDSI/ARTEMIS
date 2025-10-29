@@ -44,9 +44,9 @@ For safe installation run
     Rscript compile_and_run.R
 
 To test the installation call:
-    R_LIBS_USER=$(pwd)/ARTEMIS \
+    R_LIBS_USER=$(pwd) \
     TEST_ARTEMIS_BUILD=true \
-    Rscript -e "library('ARTEMIS')
+    Rscript -e "library('ARTEMIS')"
 
 ### Reticulate library
 
