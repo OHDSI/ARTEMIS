@@ -8,16 +8,7 @@
   }
 
   # Resolve paths from ENV or use fallback
-  ARTEMIS_DIR_PATH <- Sys.getenv("ARTEMIS_DIR_PATH", unset = "./ARTEMIS")
-  DEVTOOLS_DIR_PATH <- Sys.getenv("DEVTOOLS_DIR_PATH", unset = ".Ruserdata1")
   ARTEMIS_PY_VERSION <- Sys.getenv("ARTEMIS_PY_VERSION", unset = Sys.which("python"))
-
-  # Adjust .libPaths()
-  .libPaths(c(
-    normalizePath(ARTEMIS_DIR_PATH, mustWork = FALSE),
-    normalizePath(DEVTOOLS_DIR_PATH, mustWork = FALSE),
-    .libPaths()
-  ))
 
   message("[ARTEMIS-ENV-SETUP] Done.")
 
