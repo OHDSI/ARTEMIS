@@ -14,7 +14,7 @@ import shutil
 # inst/cython/bootstrap_env.py  →  <R-LIB>/ARTEMIS/cython/bootstrap_env.py
 # inst/cython/setup.py          →  <R-LIB>/ARTEMIS/cython/setup.py
 
-MY_LIB = "ARTEMIS"  
+LIB_LABEL = "ARTEMIS"  
 
 @dataclass  # Just a decorator for boilerplate stuff
 class EnvInfo:
@@ -44,7 +44,7 @@ class BootstrapGraph:
         for dep in deps:
             self.run(dep)
 
-        print(f"[{MY_LIB}] Running phase: {name}")
+        print(f"[{LIB_LABEL}] Running phase: {name}")
         func()
         self.completed.add(name)
 
@@ -66,7 +66,7 @@ class BuildBootstrap:
         bg.add("install", ["check_build"], self._install_build_tools)
 
         if self.cython_sources:
-            bg.add("compile", ["install"], self._build_cython_sources)
+            bg.add("compile", ["install"], self._build_cython_sources_wrap)
             bg.add("copy", ["compile"], self._copy_so_outputs)
             bg.add("load", ["copy"], self._write_init_py)
             top_phase = "load"
@@ -78,7 +78,7 @@ class BuildBootstrap:
         except AlreadyBuilt:
             pass  # Exit quietly
 
-        print(f"[{MY_LIB}] ✅ Build completed.")
+        print(f"[{LIB_LABEL}] ✅ Build completed.")
     
     # ---------- Detect ----------
     def _detect_env(self) -> EnvInfo:
@@ -90,18 +90,18 @@ class BuildBootstrap:
         )
 
     def _print_env(self):
-        print(f"[{MY_LIB}] Detected OS: {self.env.os_name}")
-        print(f"[{MY_LIB}] Architecture: {self.env.arch}")
-        print(f"[{MY_LIB}] Host Python: {self.env.py_version}")
+        print(f"[{LIB_LABEL}] Detected OS: {self.env.os_name}")
+        print(f"[{LIB_LABEL}] Architecture: {self.env.arch}")
+        print(f"[{LIB_LABEL}] Host Python: {self.env.py_version}")
 
     # ---------- Env creation ----------
     def _ensure_env(self):
         if not self.env_dir.exists():
-            print(f"[{MY_LIB}] Creating isolated build environment at {self.env_dir}")
+            print(f"[{LIB_LABEL}] Creating isolated build environment at {self.env_dir}")
             builder = venv.EnvBuilder(with_pip=True, clear=True)
             builder.create(self.env_dir)
         else:
-            print(f"[{MY_LIB}] Reusing existing build environment at {self.env_dir}")
+            print(f"[{LIB_LABEL}] Reusing existing build environment at {self.env_dir}")
 
     @property
     def _env_python(self) -> str:
@@ -130,13 +130,13 @@ class BuildBootstrap:
         files = list(target_dir.glob(f"*{ext}"))
         compiled = len([f for f in files if f.stat().st_size > 4096]) >= 3
         if compiled:
-            print(f"[{MY_LIB}] Already built. Skipping rebuild.")
+            print(f"[{LIB_LABEL}] Already built. Skipping rebuild.")
             raise AlreadyBuilt()
         
     # ---------- Install base tools ----------
     def _install_build_tools(self):
         # TODO: No internet for some users!
-        print(f"[{MY_LIB}] Installing build tools and dependencies (setuptools, wheel, Cython, numpy, pandas)...")
+        print(f"[{LIB_LABEL}] Installing build tools and dependencies (setuptools, wheel, Cython, numpy, pandas)...")
         subprocess.run(
             [
                 self._env_python, "-m", "pip", "install", "--quiet", "--upgrade",
@@ -149,22 +149,18 @@ class BuildBootstrap:
             ],
             check=True,
         )
-        print(f"[{MY_LIB}] ✅ Build dependencies installed successfully.")
+        print(f"[{LIB_LABEL}] ✅ Build dependencies installed successfully.")
 
 
     # ---------- Build Cython modules ----------
     def _build_cython_sources(self):
         """Build all .pyx modules into compiled .so/.pyd using setup.py in cython/."""
-        print(f"[{MY_LIB}] Compiling Cython modules")
+        print(f"[{LIB_LABEL}] Compiling Cython modules")
 
         cython_dir = self.package_root / "cython" # temp mirror
         setup_path = cython_dir / "setup.py"
         if not setup_path.exists():
-            raise FileNotFoundError(f"[{MY_LIB}] setup.py not found at {setup_path}")
-
-        # # Clean and rebuild 
-        # for pattern in ["TSW_Package", "*.so", "*.c", "*.o", "build"]:
-        #     subprocess.run(f"rm -rf {pattern}", shell=True, cwd=cython_dir)
+            raise FileNotFoundError(f"[{LIB_LABEL}] setup.py not found at {setup_path}")
 
         target_dir = pathlib.Path(self.site_packages_dir) / "TSW_Package"
         os.makedirs(target_dir, exist_ok=True)
@@ -176,12 +172,19 @@ class BuildBootstrap:
             check=True
         )
 
-        print(f"[{MY_LIB}] ✅ Cython compilation complete.")
+        print(f"[{LIB_LABEL}] ✅ Cython compilation complete.")
 
+    def _build_cython_sources_wrap(self):
+        """Wrapper around _build_cython_sources to allow clean fallback if Cython fails."""
+        try:
+            self._build_cython_sources()
+        except Exception as e:
+            print(f"[{LIB_LABEL}] ⚠️ Cython build Failed — falling back to pure Python.\nReason: {e}")
+            sys.exit(1)
 
     # ---------- Breakdown summary ----------
     def _env_breakdown(self):
-        print(f"\n[{MY_LIB}] ✅ Environment Setup Summary")
+        print(f"\n[{LIB_LABEL}] ✅ Environment Setup Summary")
         print("=" * 60)
         print(f"Package root     : {self.package_root}")
         print(f"Virtual env path : {self.env_dir}")
@@ -198,22 +201,22 @@ class BuildBootstrap:
             for line in pkgs.strip().splitlines()[2:]:
                 print("  " + line)
         except Exception as e:
-            print(f"[{MY_LIB}] (Warning) Could not list packages: {e}")
+            print(f"[{LIB_LABEL}] (Warning) Could not list packages: {e}")
 
         print("=" * 60)
-        print(f"[{MY_LIB}] Build complete and environment ready.\n")
+        print(f"[{LIB_LABEL}] Build complete and environment ready.\n")
 
     def _copy_so_outputs(self):
         """Copy .so/.pyd files into TSW_Package/"""
         build_dir = self.package_root / "cython"
         target_dir = self.site_packages_dir / "TSW_Package"
-        print(f"[{MY_LIB}] Site package dir used: {target_dir}")
+        print(f"[{LIB_LABEL}] Site package dir used: {target_dir}")
         target_dir.mkdir(exist_ok=True)
 
         for ext in ["*.so", "*.pyd"]:
             for compiled_file in build_dir.glob(ext):
                 shutil.copy2(compiled_file, target_dir)
-                print(f"[{MY_LIB}] Copied: {compiled_file.name} → TSW_Package")
+                print(f"[{LIB_LABEL}] Copied: {compiled_file.name} → TSW_Package")
 
     def _write_init_py(self):
         """Write __init__.py pointing to Cython entrypoint"""
@@ -221,4 +224,4 @@ class BuildBootstrap:
         with open(init_path, "w") as f:
             f.write("from .run_TSW import align_patients_regimens_fast\n")
             f.write("__all__ = [align_patients_regimens_fast,]\n")
-        print(f"[{MY_LIB}] ✅ __init__.py written for TSW_Package")
+        print(f"[{LIB_LABEL}] ✅ __init__.py written for TSW_Package")
