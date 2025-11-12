@@ -6,6 +6,8 @@
   message("[ARTEMIS-ENV-SETUP] Done.")
   message("[ARTEMIS-boot] Initializing Python backend...")
 
+  # TODO: Add DEV_tools or Artemis custom path but keep libPaths!
+
   # ----------- Python runtime  -----------
   # Find what python executable for R and set PATH
   python_path = ARTEMIS_PY_VERSION
