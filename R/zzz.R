@@ -3,20 +3,27 @@
   # ----------- EVN SETUP BLOCK -----------
   # Resolve paths from ENV or use fallback
   ARTEMIS_PY_VERSION <- Sys.getenv("ARTEMIS_PY_VERSION", unset = Sys.which("python"))
-  message("[ARTEMIS-ENV-SETUP] Done.")
-  message("[ARTEMIS-boot] Initializing Python backend...")
+  message("[ARTEMIS-boot-R] Setup env...")
+  message("[ARTEMIS-boot-R] Initializing Python backend...")
 
-  # TODO: Add DEV_tools or Artemis custom path but keep libPaths!
+  # (Optional) Development friendly chunk
+  ARTEMIS_DIR_PATH <- Sys.getenv("ARTEMIS_DIR_PATH", unset="")
+  DEVTOOLS_DIR_PATH <- Sys.getenv("DEVTOOLS_DIR_PATH", unset = "")
+  custom_paths <- c(ARTEMIS_DIR_PATH, DEVTOOLS_DIR_PATH)
+  valid_custom_paths <- custom_paths[nzchar(custom_paths)] # filter "" paths
+  if (length(valid_custom_paths) > 0) {
+      .libPaths(c(valid_custom_paths, .libPaths()))
+  }
 
   # ----------- Python runtime  -----------
   # Find what python executable for R and set PATH
   python_path = ARTEMIS_PY_VERSION
   if (!nzchar(python_path)) {
-    stop("❌ No 'python' binary found on PATH. Install Python 3.12+ first.")
+    stop("[X] No 'python' binary found on PATH. Install Python 3.12+ first.")
   }
   # ---------- Ensure reticulate is installed and loaded ------------------
   if (!requireNamespace("reticulate", quietly = TRUE)) {
-    message("[ARTEMIS-boot] Installing 'reticulate' package...")
+    message("[ARTEMIS-boot-R] Installing 'reticulate' package...")
     install.packages("reticulate", repos = "https://cloud.r-project.org")
   }
   library(reticulate)
@@ -25,17 +32,17 @@
   package_root <- system.file(package = pkgname)
   venv_path <- file.path(package_root, ".r-reticulate")
   virtualenv_create(venv_path, python = python_path)
-  cat("[ARTEMIS-boot] Environment path:", venv_path, "\n")
-  cat("[ARTEMIS-boot] Python version to use:", python_path, "\n")
   use_virtualenv(venv_path, required = TRUE)
   
   # ---------- [Logging] Detect final Python configuration with a fallback ---------------
   cfg <- tryCatch(py_config(), error = function(e) NULL)
+  cat("[ARTEMIS-boot-R] Environment details:", "\n")
+  cat("path:           ", venv_path, "\n")
   print(cfg)
 
   if (is.null(cfg)) {
     os <- Sys.info()[["sysname"]]
-    cat("\n[ARTEMIS-boot] ERR No Python interpreter detected.\n")
+    cat("\n[ARTEMIS-boot-R] ERR No Python interpreter detected.\n")
     cat("ARTEMIS requires Python 3.12 or newer.\n\n")
 
     if (os == "Windows") {
@@ -64,7 +71,7 @@
     cat("   devtools::install_github('OHDSI/ARTEMIS')\n")
     cat("Then load the package normally:\n")
     cat("   library(ARTEMIS)\n\n")
-    stop("[ARTEMIS-boot] Aborting setup: Python 3.12+ required.")
+    stop("[ARTEMIS-boot-R] Aborting setup: Python 3.12+ required.")
   }
 
   # -------- [Safeguard] Enforce minimum Python version -------------------------------
@@ -72,90 +79,73 @@
   ver_minor <- as.numeric(cfg$version$minor)
   if (ver_major < 3 || (ver_major == 3 && ver_minor < 12)) {
     stop(paste0(
-      "[ARTEMIS-boot] Detected Python ", cfg$version$version,
+      "[ARTEMIS-boot-R] Detected Python ", cfg$version$version,
       " — too old. Please upgrade to Python 3.12 or newer, then rerun:\n",
       "   devtools::install_github('OHDSI/ARTEMIS')"
     ))
   }
   # ------------- Lock the interpreter path for both build and runtime -----------
   py_exec <- cfg$python
-  message(paste("[ARTEMIS-boot] Using Python:", py_exec))
   
   # ------------ Install required py packages =----------------------------
+  # Note - reticulate installs numpy by default with `virtualenv_create`.
   required <- c("numpy", "pandas")
   for (pkg in required) {
     if (!py_module_available(pkg)) {
-      message(sprintf("[ARTEMIS-boot] Installing missing Python module: %s", pkg))
+      message(sprintf("[ARTEMIS-boot-R] Installing missing Python module: %s", pkg))
       py_install(pkg, python = python_path)
     }
   }
   cfg <- tryCatch(py_config(), error = function(e) NULL)
 
   # -------------- Trigger Python bootstrap build under the same interpreter -------
-  bootstrap_path <- system.file("cython/bootstrap_env.py", package = pkgname)
   package_root   <- system.file(package = pkgname)
   cython_dir     <- file.path(package_root, "cython")
   cython_sources <- list.files(cython_dir, pattern = "\\.pyx$", full.names = TRUE)
+  bootstrap_path <- system.file("cython/bootstrap_env.py", package = pkgname)
   
   # ----------------------------------------------------------------------------------
   # BUILD BLOCK
   # ----------------------------------------------------------------------------------
   
-  # -----  Will look inside reticulate python env (venv)... ----- 
-  # TODO (Optional): convert to R if better ----
-  tsw_dir <- py_eval("(__import__('sysconfig').get_paths()['purelib'])", convert = TRUE)
-
-  cat("tsw_dir:", tsw_dir, '\n')
-
-  so_files <- list.files(
-    file.path(tsw_dir, "TSW_Package"),
-    pattern = "\\.(so|pyd)$",
-    full.names = TRUE
+  cat("[ARTEMIS-boot-R] Checking Cython modules — running Py bootstrap...\n")
+  reticulate::source_python(bootstrap_path)
+  
+  # Run builder
+  pyObject <- py$BuildBootstrap(
+    package_root = package_root,
+    cython_sources = cython_sources
   )
 
-  is_built <- length(so_files) >= 3  # heuristic: 3+ .so/.pyd = built
-  cat("is_built:", is_built, '\n')
-  
-  if (!is_built) {
-    cat("[ARTEMIS-boot] ⏳ No compiled Cython modules detected — running bootstrap...\n")
-    reticulate::source_python(bootstrap_path)
-  
-    # Run builder (calls Python class which sys.exit(1) if build fails)
-    py$BuildBootstrap(
-      package_root = package_root,
-      cython_sources = cython_sources
-    )
+  use_python <- pyObject$cython_failed
 
-    # Cleaning
-    reticulate::py_run_string("import gc; gc.collect()")
-  } else {
-    message("[ARTEMIS-boot] ✅ Existing. Build detected — skipping bootstrap.")
-  }
+  # Cleaning
+  reticulate::py_run_string("import gc; gc.collect()")
 
   # ------------------------------------------
   # RUNTIME BLOCK
   # ------------------------------------------
 
-  cat("[ARTEMIS-boot] Loading alignment algorithm...\n")
+  cat("[ARTEMIS-boot-R] Loading alignment algorithm...\n")
   ns <- asNamespace(pkgname)
 
-  mod_path <- if (is_built && length(so_files) >= 3) "cython" else "python"
+  mod_path <- if (use_python) "python" else "cython"
 
   py_functions <- tryCatch(
     reticulate::import_from_path("main", path = file.path(package_root, mod_path)),
     error = function(e) {
       if (mod_path == "cython") {
-        warning("[ARTEMIS-boot] ⚠️ Cython import failed, falling back to Python")
+        warning("[ARTEMIS-boot-R] [WARN!] Cython import failed, falling back to Python")
         return(NULL)
       } else {
-        stop("[ARTEMIS-boot] ❌ Failed to import Python fallback module: ", e$message)
+        stop("[ARTEMIS-boot-R] [X] Failed to import Python fallback module: ", e$message)
       }
     }
   )
 
   if (!is.null(py_functions$align_patients_regimens)) {
     assign("align_patients_regimens", py_functions$align_patients_regimens, envir = ns)
-    message(sprintf("[ARTEMIS-boot] ✅ align_patients_regimens loaded (%s)", mod_path))
+    message(sprintf("[ARTEMIS-boot-R] [OK] align_patients_regimens loaded (%s)", mod_path))
     return(invisible(NULL))
   }
 
@@ -164,11 +154,11 @@
     py_functions <- reticulate::import_from_path("main", path = file.path(package_root, "python"))
     if (!is.null(py_functions$align_patients_regimens)) {
       assign("align_patients_regimens", py_functions$align_patients_regimens, envir = ns)
-      message("[ARTEMIS-boot] ✅ align_patients_regimens loaded (python fallback)")
+      message("[ARTEMIS-boot-R] [OK] align_patients_regimens loaded (python fallback)")
       return(invisible(NULL))
     }
   }
 
-  stop("[ARTEMIS-boot] ❌ align_patients_regimens not found in any module")
+  stop("[ARTEMIS-boot-R] [X] align_patients_regimens not found in any module")
 
 }
