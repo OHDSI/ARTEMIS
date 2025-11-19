@@ -1,140 +1,0 @@
-📦 Sys name:
-[1] "Linux"
-
-[36m──[39m [36mR CMD build[39m [36m─────────────────────────────────────────────────────────────────[39m
-     checking for file ‘/home/stev/proj/ARTEMIS/DESCRIPTION’ ...  [32m✔[39m  [38;2;169;169;169mchecking for file ‘/home/stev/proj/ARTEMIS/DESCRIPTION’[39m[36m[39m
-  [38;2;169;169;169m─[39m[38;2;169;169;169m  [39m[38;2;169;169;169mpreparing ‘ARTEMIS’:[39m[36m[36m (831ms)[36m[39m
-   checking DESCRIPTION meta-information ...  [32m✔[39m  [38;2;169;169;169mchecking DESCRIPTION meta-information[39m[36m[39m
-  [38;2;169;169;169m─[39m[38;2;169;169;169m  [39m[38;2;169;169;169mchecking for LF line-endings in source and make files and shell scripts[39m[36m[36m (576ms)[36m[39m
-  [38;2;169;169;169m─[39m[38;2;169;169;169m  [39m[38;2;169;169;169mchecking for empty or unneeded directories[39m[36m[39m
-     Removed empty directory ‘ARTEMIS/.Ruserdata1/cli/shiny/output’
-     Removed empty directory ‘ARTEMIS/.Ruserdata1/jpeg/img’
-     Removed empty directory ‘ARTEMIS/.Ruserdata1/png/img’
-     Removed empty directory ‘ARTEMIS/.Ruserdata1/waldo/help/figures’
-     Removed empty directory ‘ARTEMIS/.RuserdataTest/cli/shiny/output’
-     Removed empty directory ‘ARTEMIS/.RuserdataTest/jpeg/img’
-     Removed empty directory ‘ARTEMIS/.RuserdataTest/png/img’
-     Removed empty directory ‘ARTEMIS/img’
-  [38;2;169;169;169m─[39m[38;2;169;169;169m  [39m[38;2;169;169;169mbuilding ‘ARTEMIS_1.0.0.1.tar.gz’[39m[36m[39m
-     Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-     storing paths of more than 100 bytes is not portable:
-     ‘ARTEMIS/.Ruserdata-ARTEMIS/reticulate/tests/testthat/resources/_snaps/python-knitr-engine/test-chunking.md’
-     Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-     storing paths of more than 100 bytes is not portable:
-     ‘ARTEMIS/.Ruserdata1/Rcpp/tinytest/testRcppInterfaceExporter/inst/include/testRcppInterfaceExporter_RcppExports.h’
-     Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-     storing paths of more than 100 bytes is not portable:
-     ‘ARTEMIS/.RuserdataTest/Rcpp/tinytest/testRcppInterfaceExporter/inst/include/testRcppInterfaceExporter.h’
-     Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-     storing paths of more than 100 bytes is not portable:
-     ‘ARTEMIS/.RuserdataTest/Rcpp/tinytest/testRcppInterfaceExporter/inst/include/testRcppInterfaceExporter_RcppExports.h’
-     
-Running /usr/lib64/R/bin/R CMD INSTALL /tmp/RtmpU6e8Ol/ARTEMIS_1.0.0.1.tar.gz \
-  --install-tests 
-* installing to library ‘/home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS’
-* installing *source* package ‘ARTEMIS’ ...
-** this is package ‘ARTEMIS’ version ‘1.0.0.1’
-** using staged installation
-** R
-** data
-*** moving datasets to lazyload DB
-** inst
-** byte-compile and prepare package for lazy loading
-** help
-*** installing help indices
-** building package indices
-** testing if installed package can be loaded from temporary location
-[ARTEMIS-boot] Initializing Python backend...
-virtualenv: ~/.virtualenvs/r-reticulate
-[ARTEMIS-boot] Environment path: ~/.virtualenvs/r-reticulate 
-[ARTEMIS-boot] Python version to use: /usr/bin/python 
-python:         /home/stev/.virtualenvs/r-reticulate/bin/python
-libpython:      /usr/lib/libpython3.13.so
-pythonhome:     /home/stev/.virtualenvs/r-reticulate:/home/stev/.virtualenvs/r-reticulate
-version:        3.13.7 (main, Aug 15 2025, 12:34:02) [GCC 15.2.1 20250813]
-numpy:          /home/stev/.virtualenvs/r-reticulate/lib/python3.13/site-packages/numpy
-numpy_version:  2.3.4
-
-NOTE: Python version was forced by use_python() function
-[ARTEMIS-boot] Using Python: /home/stev/.virtualenvs/r-reticulate/bin/python
-Error: package or namespace load failed for ‘ARTEMIS’:
- .onLoad failed in loadNamespace() for 'ARTEMIS', details:
-  call: py_eval_impl(code, convert)
-  error:   File "reticulate_eval", line 1
-    import site; site.getsitepackages()[0]
-    ^^^^^^
-SyntaxError: invalid syntax
-Run `reticulate::py_last_error()` for details.
-Error: loading failed
-Execution halted
-ERROR: loading failed
-* removing ‘/home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS/ARTEMIS’
-* restoring previous ‘/home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS/ARTEMIS’
-📦 Sys name:
-[1] "Linux"
-
-[36m──[39m [36mR CMD build[39m [36m─────────────────────────────────────────────────────────────────[39m
-     checking for file ‘/home/stev/proj/ARTEMIS/DESCRIPTION’ ...  [32m✔[39m  [38;2;169;169;169mchecking for file ‘/home/stev/proj/ARTEMIS/DESCRIPTION’[39m[36m[39m
-  [38;2;169;169;169m─[39m[38;2;169;169;169m  [39m[38;2;169;169;169mpreparing ‘ARTEMIS’:[39m[36m[36m (923ms)[36m[39m
-   checking DESCRIPTION meta-information ...  [32m✔[39m  [38;2;169;169;169mchecking DESCRIPTION meta-information[39m[36m[39m
-  [38;2;169;169;169m─[39m[38;2;169;169;169m  [39m[38;2;169;169;169mchecking for LF line-endings in source and make files and shell scripts[39m[36m[36m (672ms)[36m[39m
-  [38;2;169;169;169m─[39m[38;2;169;169;169m  [39m[38;2;169;169;169mchecking for empty or unneeded directories[39m[36m[39m
-     Removed empty directory ‘ARTEMIS/.Ruserdata1/cli/shiny/output’
-     Removed empty directory ‘ARTEMIS/.Ruserdata1/jpeg/img’
-     Removed empty directory ‘ARTEMIS/.Ruserdata1/png/img’
-     Removed empty directory ‘ARTEMIS/.Ruserdata1/waldo/help/figures’
-     Removed empty directory ‘ARTEMIS/.RuserdataTest/cli/shiny/output’
-     Removed empty directory ‘ARTEMIS/.RuserdataTest/jpeg/img’
-     Removed empty directory ‘ARTEMIS/.RuserdataTest/png/img’
-     Removed empty directory ‘ARTEMIS/img’
-  [38;2;169;169;169m─[39m[38;2;169;169;169m  [39m[38;2;169;169;169mbuilding ‘ARTEMIS_1.0.0.1.tar.gz’[39m[36m[39m
-     Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-     storing paths of more than 100 bytes is not portable:
-     ‘ARTEMIS/.Ruserdata-ARTEMIS/reticulate/tests/testthat/resources/_snaps/python-knitr-engine/test-chunking.md’
-     Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-     storing paths of more than 100 bytes is not portable:
-     ‘ARTEMIS/.Ruserdata1/Rcpp/tinytest/testRcppInterfaceExporter/inst/include/testRcppInterfaceExporter_RcppExports.h’
-     Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-     storing paths of more than 100 bytes is not portable:
-     ‘ARTEMIS/.RuserdataTest/Rcpp/tinytest/testRcppInterfaceExporter/inst/include/testRcppInterfaceExporter.h’
-     Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-     storing paths of more than 100 bytes is not portable:
-     ‘ARTEMIS/.RuserdataTest/Rcpp/tinytest/testRcppInterfaceExporter/inst/include/testRcppInterfaceExporter_RcppExports.h’
-     
-Running /usr/lib64/R/bin/R CMD INSTALL /tmp/Rtmp0fmLCH/ARTEMIS_1.0.0.1.tar.gz \
-  --install-tests 
-* installing to library ‘/home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS’
-* installing *source* package ‘ARTEMIS’ ...
-** this is package ‘ARTEMIS’ version ‘1.0.0.1’
-** using staged installation
-** R
-** data
-*** moving datasets to lazyload DB
-** inst
-** byte-compile and prepare package for lazy loading
-** help
-*** installing help indices
-** building package indices
-** testing if installed package can be loaded from temporary location
-[ARTEMIS-boot] Initializing Python backend...
-virtualenv: ~/.virtualenvs/r-reticulate
-[ARTEMIS-boot] Environment path: ~/.virtualenvs/r-reticulate 
-[ARTEMIS-boot] Python version to use: /usr/bin/python 
-python:         /home/stev/.virtualenvs/r-reticulate/bin/python
-libpython:      /usr/lib/libpython3.13.so
-pythonhome:     /home/stev/.virtualenvs/r-reticulate:/home/stev/.virtualenvs/r-reticulate
-version:        3.13.7 (main, Aug 15 2025, 12:34:02) [GCC 15.2.1 20250813]
-numpy:          /home/stev/.virtualenvs/r-reticulate/lib/python3.13/site-packages/numpy
-numpy_version:  2.3.4
-
-NOTE: Python version was forced by use_python() function
-[ARTEMIS-boot] Using Python: /home/stev/.virtualenvs/r-reticulate/bin/python
-Error: package or namespace load failed for ‘ARTEMIS’:
- .onLoad failed in loadNamespace() for 'ARTEMIS', details:
-  call: unclass(x)[[..., exact = exact]]
-  error: subscript out of bounds
-Error: loading failed
-Execution halted
-ERROR: loading failed
-* removing ‘/home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS/ARTEMIS’
-* restoring previous ‘/home/stev/proj/ARTEMIS/.Ruserdata-ARTEMIS/ARTEMIS’
