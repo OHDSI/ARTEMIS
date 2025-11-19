@@ -87,6 +87,12 @@ the following commands before loading the package:
     reticulate::py_install("numpy")
     reticulate::py_install("pandas")
 
+    **Other python dependencies for the build**
+    reticulate::py_install("setuptools")
+    reticulate::py_install("wheel")
+    reticulate::py_install("Cython")
+    reticulate::py_install("tqdm")
+    
 If you do not presently have reticulate or python3.12 installed you may
 first need to run the following commands to ensure that reticulate can
 access a valid python install on your system:

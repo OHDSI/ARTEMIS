@@ -231,6 +231,8 @@ def align_patients_regimens(
                 df["personID"] = row1[col_name_patient_id]
                 df["DrugRecord_full"] = row1[col_name_patient_record]
                 dfs.append(df)
+    if not dfs:
+        return pd.DataFrame()  # Return empty DataFrame if no alignments found
 
     result = pd.concat(dfs, ignore_index=True)
     return result
@@ -257,7 +259,7 @@ def main():
     )
 
     df = align_patients_regimens(patients, regimens)
-    print(df)
+    # print(df)
     print("Python module loaded successfully.")
 
 
