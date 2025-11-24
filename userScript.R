@@ -73,19 +73,20 @@ processedAll <- output_all %>%
 
 processedEras <- processedAll %>% calculateEras()
 
+# To be decided what to do with generateRegimenStats and writeOutputs
 # Regimen stats does not work
 # regStats <- processedEras %>% generateRegimenStats()
 
 ##### Save all outputs #####
-
-writeOutputs(
-    output_all,
-    processedAll = processedAll,
-    processedEras = processedEras,
-    connectionDetails = connectionDetails,
-    cdmSchema = cdmSchema,
-    regGroups = regGroups,
-    regStats = regStats,
-    stringDF = stringDF,
-    con_df = con_df
-)
+# 
+# writeOutputs(
+#     output_all,
+#     processedAll = processedAll,
+#     processedEras = processedEras,
+#     connectionDetails = connectionDetails,
+#     cdmSchema = cdmSchema,
+#     regGroups = regGroups,
+#     regStats = regStats,
+#     stringDF = stringDF,
+#     con_df = con_df
+# )
