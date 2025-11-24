@@ -11,7 +11,7 @@ getConDF <- function(connectionDetails, json, name, cdmSchema, writeSchema){
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
 
   cohortsToCreate <- CohortGenerator::createEmptyCohortDefinitionSet()
-  cohortExpression <- CirceR::cohortExpressionFromJson(json$json[[1]])
+  cohortExpression <- CirceR::cohortExpressionFromJson(json)
   cohortSql <- CirceR::buildCohortQuery(cohortExpression, options = CirceR::createGenerateOptions(generateStats = FALSE))
   cohortsToCreate <- rbind(cohortsToCreate, data.frame(cohortId = 1,
                                                        cohortName = name,
@@ -165,7 +165,7 @@ loadDrugs <- function(absolute=NULL) {
 #' Edit: all conditions supported matching a name OR providing a mapping, see example
 #' @param mapping A named list of user provids condition to maping
 #' @export
-loadRegimens <- function(condition, absolute = NULL, 
+loadRegimens <- function(condition = "all", absolute = NULL, 
                          mapping = list("lungCancer" = c("Thoraic Oncology", "Thoraic Oncology"),
                                         "multipleMyeloma" = c("Multiple Myeloma"))) {
   
@@ -245,8 +245,7 @@ loadGroups <- function(absolute=NULL) {
 #' Load the default regimen group dataframe
 #' @export
 loadCohort <- function() {
-  #data("json", package = "ARTEMIS")
-  return(ARTEMIS::json)
+  return(ARTEMIS::df_json)
 }
 
 #' Filter a stringDF dataframe to contain only valid patients
