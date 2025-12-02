@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 .DS_Store
+.r-reticulate
 errorReportSql.txt
 CDM_test_long.R
 TestTest.R

@@ -34,7 +34,7 @@ To check the Python version from within R:
 system("python --version", intern = TRUE)
 ```
 
-For convenience, set the `ARTEMIS_PY_VERSION` system variable to the correct Python path. If unsure how to do this, refer to the OS-specific setup instructions below. Make sure you have devtools installed. You can install it from within R:
+For convenience, set the `ARTEMIS_PYTHON` system variable to the correct Python path. If unsure how to do this, refer to the OS-specific setup instructions below. Make sure you have devtools installed. You can install it from within R:
 
 ```r
 install.packages("devtools")
@@ -48,7 +48,7 @@ https://www.python.org/downloads/windows/
 
 Then open cmd or PowerShell and set the environment variable:
 
-    set ARTEMIS_PY_VERSION=<ABS\\PATH\\TO\\python.exe (v3.12+)>
+    set ARTEMIS_PYTHON=<ABS\\PATH\\TO\\python.exe (v3.12+)>
 
 Other requirements checklist:
 
@@ -64,7 +64,7 @@ Install Python 3.12+ using your preferred package manager (e.g., Homebrew, apt, 
 
 Then from the terminal, set the Python version environment variable:
 
-    export ARTEMIS_PY_VERSION="/absolute/path/to/python3.12"
+    export ARTEMIS_PYTHON="/absolute/path/to/python3.12"
 
 Other dependencies you might need installed:
 

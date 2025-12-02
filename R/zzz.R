@@ -2,7 +2,9 @@
   
   # ----------- EVN SETUP BLOCK -----------
   # Resolve paths from ENV or use fallback
-  ARTEMIS_PY_VERSION <- Sys.getenv("ARTEMIS_PY_VERSION", unset = Sys.which("python"))
+  ARTEMIS_PYTHON <- Sys.getenv("ARTEMIS_PYTHON", unset = Sys.which("python"))
+  DEBUG <- tolower(Sys.getenv("ARTEMIS_DEBUG", unset = "false")) == "true"
+
   message("[ARTEMIS-boot-R] Setup env...")
   message("[ARTEMIS-boot-R] Initializing Python backend...")
 
@@ -17,13 +19,19 @@
 
   # ----------- Python runtime  -----------
   # Find what python executable for R and set PATH
-  python_path = ARTEMIS_PY_VERSION
+  python_path = ARTEMIS_PYTHON
   if (!nzchar(python_path)) {
-    stop("[X] No 'python' binary found on PATH. Install Python 3.12+ first.")
+    stop(
+      "[X] No 'python' binary found on PATH.\n",
+      "Please install Python 3.12+ first.\n",
+      "In case you have a specific Python environment, just set the path:\n",
+      "Sys.setenv(ARTEMIS_PYTHON = \"/path/to/your/python\")\n",
+      "Then re-run the script."
+    )
   }
   # ---------- Ensure reticulate is installed and loaded ------------------
   if (!requireNamespace("reticulate", quietly = TRUE)) {
-    message("[ARTEMIS-boot-R] Installing 'reticulate' package...")
+    if (DEBUG) message("[ARTEMIS-boot-R] Installing 'reticulate' package...")
     install.packages("reticulate", repos = "https://cloud.r-project.org")
   }
   library(reticulate)
@@ -47,7 +55,7 @@
   if (is.null(cfg)) {
     os <- Sys.info()[["sysname"]]
     cat("\n[ARTEMIS-boot-R] ERR No Python interpreter detected.\n")
-    cat("ARTEMIS requires Python 3.12 or newer.\n\n")
+    cat("[ARTEMIS-boot-R] Requires Python 3.12 or newer.\n\n")
 
     if (os == "Windows") {
       cat(">  Windows detected.\n")
@@ -88,9 +96,9 @@
     ))
   }
   # ---------- (Optional) Logging environment configuration ---------------
-  cat("[ARTEMIS-boot-R] Environment details:", "\n")
-  cat("path:           ", venv_path, "\n")
-  print(cfg)
+  if (DEBUG) cat("[ARTEMIS-boot-R] Environment details:", "\n")
+  if (DEBUG) cat("path:           ", venv_path, "\n")
+  if (DEBUG) print(cfg)
 
   # ------------- Lock the interpreter path for both build and runtime -----------
   py_exec <- cfg$python
@@ -100,7 +108,7 @@
   required <- c("numpy", "pandas")
   for (pkg in required) {
     if (!py_module_available(pkg)) {
-      message(sprintf("[ARTEMIS-boot-R] Installing missing Python module: %s", pkg))
+      if (DEBUG) message(sprintf("[ARTEMIS-boot-R] Installing Python module: %s", pkg))
       py_install(pkg, python = python_path)
     }
   }
@@ -116,7 +124,7 @@
     # BUILD BLOCK
     # ----------------------------------------------------------------------------------
     
-    cat("[ARTEMIS-boot-R] Checking Cython modules — running Py bootstrap...\n")
+    if (DEBUG) cat("[ARTEMIS-boot-R] Checking Cython modules — running Py bootstrap...\n")
     reticulate::source_python(bootstrap_path)
     
     # Run builder
@@ -134,7 +142,7 @@
     # RUNTIME BLOCK
     # ------------------------------------------
 
-    cat("[ARTEMIS-boot-R] Loading alignment algorithm...\n")
+    if (DEBUG) cat("[ARTEMIS-boot-R] Loading alignment algorithm...\n")
     ns <- asNamespace(pkgname)
 
     mod_path <- if (use_python) "python" else "cython"
