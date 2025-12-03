@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+echo "==> Configuring artemis python path"
+
+# Use the env variable if present; otherwise try python3
+PYBIN=${ARTEMIS_PYTHON:-$(which python)}
+
+# Ensure path exists
+if [ ! -x "$PYBIN" ]; then
+    echo "ERROR: Python binary not found at $PYBIN"
+    exit 1
+fi
+
+# Write to inst/config directory inside source (it will be copied into the installed package)
+mkdir -p inst/config
+echo "$PYBIN" > inst/config/python_path.txt
+
+echo "Saved Python path: $PYBIN"

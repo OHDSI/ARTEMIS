@@ -1,0 +1,37 @@
+@echo off
+echo ==> Configuring ARTEMIS_PYTHON (Windows)
+
+REM Prefer ARTEMIS_PYTHON if set
+if defined ARTEMIS_PYTHON (
+    set PYBIN=%ARTEMIS_PYTHON%
+) else (
+    REM fallback: find python on PATH
+    for %%F in (python.exe python3.exe) do (
+        where %%F >nul 2>nul && (
+            for /f "delims=" %%P in ('where %%F') do set PYBIN=%%P
+            goto got_python
+        )
+    )
+)
+
+:got_python
+if not defined PYBIN (
+    echo ERROR: Could not find Python. Set ARTEMIS_PYTHON before installation.
+    exit /b 1
+)
+
+if not exist "%PYBIN%" (
+    echo ERROR: Python does not exist: %PYBIN%
+    exit /b 1
+)
+
+echo Python found: %PYBIN%
+
+REM Ensure directory exists
+if not exist inst\config mkdir inst\config
+
+REM Write path to file
+echo %PYBIN% > inst\config\python_path.txt
+
+echo Saved Python path: %PYBIN%
+exit /b 0
