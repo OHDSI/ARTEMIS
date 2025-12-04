@@ -22,28 +22,33 @@ to form the basic regimen data used in testing.
 
 ## Installation
 
-ARTEMIS can presently be installed directly from GitHub:
-
-```r
-devtools::install_github("OHDSI/ARTEMIS")
-```
-
-## Dependencies
-Before installing ARTEMIS, you need a working Python (>= 3.12) available and on your system PATH.
-
-To check the Python version from within R:
+Before installing ARTEMIS, ensure that Python (version ≥ 3.12) is installed on your system. To check Python version from R:
 
 ```r
 system("python --version", intern = TRUE)
 ```
 
-For convenience, set the `ARTEMIS_PYTHON` system variable to the correct Python path. If unsure how to do this, refer to the OS-specific setup instructions below. Make sure you have devtools installed. You can install it from within R:
+ARTEMIS can be installed directly from GitHub:
 
 ```r
-install.packages("devtools")
-```
+# Install devtools if it is not already installed
+if (!requireNamespace("devtools", quietly = TRUE)) {
+  install.packages("devtools")
+}
 
-To use ARTEMIS efficiently with the optimized alignment version, check the OS-specific dependencies:
+# Install ARTEMIS from GitHub
+devtools::install_github("OHDSI/ARTEMIS")
+```
+In case you have a specific python envirnment that you want to use, you just need to define a variable before you run install: 
+
+```r
+Sys.setenv(ARTEMIS_PYTHON = "/path/to/your/python3")
+
+
+# Install ARTEMIS from GitHub
+devtools::install_github("OHDSI/ARTEMIS")
+```
+If unsure how to set `ARTEMIS_PYTHON` or install python, refer to the OS-specific setup instructions below. 
 
 ### If using Windows
 Install Python 3.12 or above from the Microsoft Store or from:
@@ -104,7 +109,9 @@ This will prompt reticulate to install python, create a local virtualenv
 called “r-reticulate” and, finally, set this virtual environment as the
 local environment for use when running python via R through reticulate.
 
-## Usage
+## Usage - User Script
+
+A user script is attached to this repository and showcases how ARTEMIS works. The script uses dummy database to create patiens and align them against regimens. 
 
 ### DatabaseConnector
 
@@ -140,13 +147,6 @@ directly from GitHub.
     cdmSchema <- "schema_containing_data"
     writeSchema <- "schema_with_write_access"
 
-### User Script
-
-A user script is attached to this repository for users who already have
-a valid CDM connection and a working python environment. Changing the
-settings within the first section of this file and running the entire
-script will generate a default ARTEMIS output for the provided CDM.
-
 ### Input
 
 An input JSON containing a cohort specification is input by the user.
@@ -154,7 +154,8 @@ Information on OHDSI cohort creation and best practices can be found
 [here](https://ohdsi.github.io/TheBookOfOhdsi/Cohorts.html). An example
 cohort selecting for patients with NSCLC is provided with the package.
 
-    json <- loadCohort()
+    df_json <- loadCohort()
+    json <- df_json$json[1]
     name <- "examplecohort"
 
     #Manual
@@ -165,11 +166,11 @@ Regimen data may be read in from the provided package, or may be
 submitted directly by the user. All of the provided regimens will be
 tested against all patients within a given cohort.
 
-    regimens <- loadRegimens(condition = "lungCancer")
+    regimens <- loadRegimens(condition = "all")
     regGroups <- loadGroups()
 
     #Manual
-    #regimens <- read.csv(here::here("data/myRegimens.csv"))
+    #regimens <- read.csv("/path/to/my/regimens.csv")
 
 A set of valid drugs may also be read in using the provided data, or may
 be curated and submitted by the user. Only valid drugs will appear in
@@ -188,8 +189,10 @@ list.
 The cdm connection is used to generate a dataframe containing the
 relevant patient details for constructing regimen strings.
 
-    con_df <- getConDF(connectionDetails = connectionDetails, json = json, 
-                       name = name, cdmSchema = cdmSchema, 
+    con_df <- getConDF(connectionDetails = connectionDetails, 
+                       json = json, 
+                       name = name, 
+                       cdmSchema = cdmSchema, 
                        writeSchema = writeSchema)
 
 Regimen strings are then constructed, collated and filtered into a
@@ -209,16 +212,18 @@ the gap penalty, g, can be found [here](www.github.com/OHDIS/ARTEMIS).
                                                      removeOverlap = 1,
                                                      method = "PropDiff")
 
-Raw output alignments are then post-processed and may be visualised.
-Post-processing steps include the handling and combination of
+Raw output alignments are then post-processed.
+Post-processing steps include the handling of
 overlapping regimen alignments, as well as formatting output for
 submission to an episode era table.
 
-    processedAll <- output_all %>% processAlignments(regimenCombine = 28, regimens = regimens)
+    processedAll <- output_all %>% 
+            processAlignments(regimenCombine = 28, regimens = regimens)
 
-    processedEras <- processedAll %>% calculateEras()
+    processedEras <- processedAll %>% 
+            calculateEras()
 
-    regStats <- processedEras %>% generateRegimenStats()
+    # regStats <- processedEras %>% generateRegimenStats()
 
 Data may then be further explored via several graphics which indicate
 various information, such as regimen frequency or the score/length
