@@ -20,7 +20,6 @@ to form the basic regimen data used in testing.
 <figcaption aria-hidden="true">ARTEMIS Workflow</figcaption>
 </figure>
 
-## Installation
 
 ## Installation
 
