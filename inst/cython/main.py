@@ -60,7 +60,7 @@ def main():
     )
 
     df = align_patients_regimens(patients, regimens)
-    print(df)
+    # print(df)
     print("Cython module loaded successfully.")
 
 

@@ -254,7 +254,7 @@ def main():
     )
 
     df = align_patients_regimens(patients, regimens)
-    print(df)
+    # print(df)
     print("Python module loaded successfully.")
 
 
