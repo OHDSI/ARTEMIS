@@ -204,13 +204,16 @@ The TSW algorithm is then run using user input settings and the provided
 regimen and patient data. Detailed information on user inputs, such as
 the gap penalty, g, can be found [here](www.github.com/OHDIS/ARTEMIS).
 
-    output_all <- stringDF %>% generateRawAlignments(regimens = regimens,
-                                                     g = 0.4,
-                                                     Tfac = 0.5,
-                                                     verbose = 0,
-                                                     mem = -1,
-                                                     removeOverlap = 1,
-                                                     method = "PropDiff")
+    output_all <- stringDF %>% 
+        generateRawAlignments(
+            regimens = regimens,
+            g = 0.4,
+            Tfac = 0.5,
+            verbose = 0,
+            mem = -1,
+            removeOverlap = 1,
+            method = "PropDiff"
+        )
 
 Raw output alignments are then post-processed.
 Post-processing steps include the handling of
