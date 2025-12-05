@@ -5,7 +5,7 @@
 \title{Load regimens for a given condition}
 \usage{
 loadRegimens(
-  condition,
+  condition = "all",
   absolute = NULL,
   mapping = list(lungCancer = c("Thoraic Oncology", "Thoraic Oncology"), multipleMyeloma
     = c("Multiple Myeloma"))

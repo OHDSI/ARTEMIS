@@ -88,7 +88,7 @@ def make_matrix(val1, val2):
 
 
 def temporal_alignment(
-    s1, s2, g=0.4, T=0.5, s=None, verbose=0, mem=-1, removeOverlap=1, method="PropDiff"
+    s1, s2, g=0.4, T=0.5, s=None, verbose=0, mem=-1, method="PropDiff"
 ):
     """
     Align s1 to s2.
@@ -109,9 +109,6 @@ def temporal_alignment(
         Verbosity level, by default 0.
     mem : int, optional
         Number of top alignments to return, by default -1 (all).
-    removeOverlap : int, optional
-        Whether to remove overlapping drugs in s1 after each alignment, by default 1 (True
-        in R).
     method : str, optional
         Method for time penalty calculation, by default "PropDiff".
 
@@ -194,7 +191,6 @@ def align_patients_regimens(
     s=None,
     verbose=0,
     mem=-1,
-    removeOverlap=1,
     method="PropDiff",
 ):
     dfs = []
@@ -222,7 +218,6 @@ def align_patients_regimens(
                     s=s,
                     verbose=verbose,
                     mem=mem,
-                    removeOverlap=removeOverlap,
                     method=method,
                 )
 
@@ -259,7 +254,7 @@ def main():
     )
 
     df = align_patients_regimens(patients, regimens)
-    # print(df)
+    print(df)
     print("Python module loaded successfully.")
 
 

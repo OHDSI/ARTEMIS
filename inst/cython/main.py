@@ -21,7 +21,6 @@ def align_patients_regimens(
     s=None,
     verbose=0,
     mem=-1,
-    removeOverlap=1,
     method="PropDiff",
 ):
     return align_patients_regimens_fast(
@@ -36,7 +35,6 @@ def align_patients_regimens(
         s=s,
         verbose=verbose,
         mem=mem,
-        removeOverlap=removeOverlap,
         method=method,
     )
 
@@ -62,7 +60,7 @@ def main():
     )
 
     df = align_patients_regimens(patients, regimens)
-    # print(df)
+    print(df)
     print("Cython module loaded successfully.")
 
 

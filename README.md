@@ -3,7 +3,6 @@
 <img src="./img/artemis.png" style="vertical-align: center;" width="100"/>
 
 </p>
-<!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ## Overview
 
@@ -207,7 +206,6 @@ the gap penalty, g, can be found [here](www.github.com/OHDIS/ARTEMIS).
             Tfac = 0.5,
             verbose = 0,
             mem = -1,
-            removeOverlap = 1,
             method = "PropDiff"
         )
 

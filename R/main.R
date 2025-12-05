@@ -27,7 +27,6 @@
 #'            Mem = 0 : Script will return exactly 1 alignment
 #'            Mem = 1 : Script will return 1 alignment and all alignments with the same score
 #'            Mem = X : Script will return X alignments and all alignments with equivalent score as the Xth alignment
-#' @param removeOverlap A variable indicating whether to remove overlaps (1) or leave them in the output data (0)
 #' @param method A character string indicating which loss function method to utilise. Please pick one of
 #'            PropDiff        - Proportional difference of Tx and Ty
 #'            AbsDiff         - Absolute difference of Tx and Ty
@@ -46,7 +45,6 @@ generateRawAlignments <- function(stringDF,
                                   s = NULL,
                                   verbose = 0,
                                   mem = -1,
-                                  removeOverlap = -1,
                                   method = "PropDiff") {
     # Input check: stop if stringDF is not a data.frame or has no rows                                
     obj_name <- deparse(substitute(stringDF))
@@ -64,7 +62,7 @@ generateRawAlignments <- function(stringDF,
         align_patients_regimens = py_functions$align_patients_regimens
     }
 
-    output = align_patients_regimens(stringDF, regimens, g=g, T=Tfac, s=s, mem=-1, removeOverlap=1, method=method)
+    output = align_patients_regimens(stringDF, regimens, g=g, T=Tfac, s=s, mem=-1, method=method)
 
     if (nrow(output) == 0) {
         cli::cat_bullet(

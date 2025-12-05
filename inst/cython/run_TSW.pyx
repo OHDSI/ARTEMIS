@@ -72,7 +72,6 @@ cpdef object temporal_alignment(
     object s,
     bint verbose,
     int mem=-1,
-    int removeOverlap=0,
     object method="PropDiff"
 ):
     """
@@ -80,12 +79,12 @@ cpdef object temporal_alignment(
 
     Parameters
     ----------
-    s1, s2 : list of [time, drug] pairs
-    g, T   : float penalties
-    s      : similarity matrix (or None)
+    s1, s2  : list of [time, drug] pairs
+    g, T    : float penalties
+    s       : similarity matrix (or None)
     verbose : bool
-    mem, removeOverlap : optional alignment controls
-    method : str
+    mem     : optional alignment controls
+    method  : str
     """
     cdef int s1_len = len(s1)
     cdef int s2_len = len(s2)
@@ -193,7 +192,6 @@ def align_patients_regimens_fast(
     s=None,
     int verbose=0,
     int mem=-1,
-    int removeOverlap=1,
     str method="PropDiff",
 ):
     """
@@ -238,7 +236,6 @@ def align_patients_regimens_fast(
                     s=s,
                     verbose=verbose,
                     mem=mem,
-                    removeOverlap=removeOverlap,
                     method=method,
                 )
 
