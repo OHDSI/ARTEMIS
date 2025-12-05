@@ -7,13 +7,9 @@
 
 ## Overview
 
-ARTEMIS provides an interface for utilizing a modified Temporal
-Smith-Waterman (TSW) algorithm, derived from
-[10.1109/DSAA.2015.7344785](https://www.researchgate.net/publication/292331949_Temporal_Needleman-Wunsch),
-to summarize longitudinal EHR data into discrete regimen eras. Primarily
-intended to be used for cancer patients, ARTEMIS utilizes data derived
-from the [HemOnc](https://hemonc.org/wiki/Main_Page) oncology reference
-to form the basic regimen data used in testing.
+ARTEMIS provides an interface to a modified Temporal Smith–Waterman (TSW) algorithm, adapted from the approach presented in [10.1109/DSAA.2015.7344785](https://www.researchgate.net/publication/292331949_Temporal_Needleman-Wunsch). This algorithm transforms longitudinal EHR data into discrete regimen eras.
+Although applicable to various contexts, ARTEMIS is primarily intended for cancer patients and uses regimen definitions sourced from the [`HemOnc`](https://hemonc.org/wiki/Main_Page) oncology reference.
+
 
 <figure>
 <img src="/img/Workflow_Detailed.png?" alt="ARTEMIS Workflow" />
