@@ -22,10 +22,23 @@ to form the basic regimen data used in testing.
 
 ## Installation
 
-Before installing ARTEMIS, ensure that Python (version ≥ 3.12) is installed on your system. To check Python version from R:
+## Installation
+
+Before installing ARTEMIS, ensure that **Python (version ≥ 3.12)** is installed on your system.  
+You can check which Python version R detects using:
 
 ```r
 system("python --version", intern = TRUE)
+```
+
+If you want ARTEMIS to use a specific Python interpreter, set the ARTEMIS_PYTHON environment variable before installation:
+
+```r
+Sys.setenv(ARTEMIS_PYTHON = "/path/to/your/python")
+```
+
+# Install ARTEMIS from GitHub
+devtools::install_github("OHDSI/ARTEMIS")
 ```
 
 ARTEMIS can be installed directly from GitHub:
@@ -38,17 +51,8 @@ if (!requireNamespace("devtools", quietly = TRUE)) {
 
 # Install ARTEMIS from GitHub
 devtools::install_github("OHDSI/ARTEMIS")
-```
-In case you have a specific python envirnment that you want to use, you just need to define a variable before you run install: 
 
-```r
-Sys.setenv(ARTEMIS_PYTHON = "/path/to/your/python3")
-
-
-# Install ARTEMIS from GitHub
-devtools::install_github("OHDSI/ARTEMIS")
-```
-If unsure how to set `ARTEMIS_PYTHON` or install python, refer to the OS-specific setup instructions below. 
+If you are unsure how to install Python or set ARTEMIS_PYTHON, refer to the OS-specific setup instructions below.
 
 ### If using Windows
 Install Python 3.12 or above from the Microsoft Store or from:
