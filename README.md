@@ -37,8 +37,6 @@ Sys.setenv(ARTEMIS_PYTHON = "/path/to/your/python")
 ```
 
 # Install ARTEMIS from GitHub
-devtools::install_github("OHDSI/ARTEMIS")
-```
 
 ARTEMIS can be installed directly from GitHub:
 
@@ -50,10 +48,11 @@ if (!requireNamespace("devtools", quietly = TRUE)) {
 
 # Install ARTEMIS from GitHub
 devtools::install_github("OHDSI/ARTEMIS")
+```
 
 If you are unsure how to install Python or set ARTEMIS_PYTHON, refer to the OS-specific setup instructions below.
 
-### If using Windows
+### On Windows
 Install Python 3.12 or above from the Microsoft Store or from:
 https://www.python.org/downloads/windows/
 
@@ -69,7 +68,7 @@ Other requirements checklist:
 
 * Visual Studio Build Tools (for faster Cython-compiled alignment)
 
-### If using Linux or macOS
+### On Linux or macOS
 
 Install Python 3.12+ using your preferred package manager (e.g., Homebrew, apt, pacman) or download it from: https://www.python.org/
 
@@ -114,7 +113,7 @@ local environment for use when running python via R through reticulate.
 
 ## Usage - User Script
 
-A user script is attached to this repository and showcases how ARTEMIS works. The script uses dummy database to create patiens and align them against regimens. 
+A user script is included in this repository,`userScript.R`, to demonstrate how ARTEMIS works. It uses a dummy database to create patients and align them with treatment regimens.
 
 ### DatabaseConnector
 
