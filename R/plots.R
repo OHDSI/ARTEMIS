@@ -8,127 +8,123 @@
 #' in addition to regimens
 #' @return regPlot - A ggplot object
 #' @export
-plotOutput <- function(output,
-                       fontSize = 2.5,
-                       regimenCombine = 28,
-                       returnDat = F,
-                       returnDrugs = F){
+plotOutput <- function(output, known_drugs = NULL){
+  # Create dataframe for drugs. 
+  # Use patient drug record to create cumulative times
+  df = output %>%
+      select(person_id = personID, seq = DrugRecord_full) %>% 
+      distinct() %>% 
+      separate_rows(seq, sep = ";") %>%
+      separate(seq, into = c("time", 'component')) %>%
+      filter(time != "") %>%
+      group_by(person_id) %>%
+      mutate(
+          time_start = cumsum(as.integer(time)),
+          time_end = time_start + 1,
+          #time_cumsum = cumsum(time),
+          case = "drugs",
+          person_id = as.character(person_id)
+      ) %>%
+      arrange(time)
 
-  drugRec <- encode(output[is.na(output$Score)|output$Score=="",][1,]$DrugRecord)
-
-  drugDF <- createDrugDF(drugRec)
-  outputDF = postprocessDF(output, regimenCombine = regimenCombine)
-
-  outputDF$regimen <- "Yes"
-
-  plotOutput <- outputDF %>%
-    dplyr::select(t_start,
-                  t_end,
-                  regName,
-                  regimen,
-                  adjustedS)
-
-  plotDrug <- drugDF %>%
-    dplyr::select(t_start,
-                  t_end,
-                  component,
-                  regimen)
-
-  plotDrug$adjustedS <- "-1"
-  colnames(plotOutput)[3] <- "component"
-
-  plotDrug <- plotDrug %>%
-    dplyr::mutate(component = strsplit(.data$component,"~")) %>%
-    tidyr::unnest(component)
-
-
-  if(returnDat == TRUE){
-
-    if(returnDrugs == TRUE){
-
-      returnData <- rbind(plotDrug,plotOutput)
-
-    } else {
-
-      returnData <- plotOutput
-
-    }
-
-    returnData$personID <- unique(output$personID)
-    return(returnData)
-
-  } else {
-
-    eb <- ggplot2::element_blank()
-
-    plot <- rbind(plotDrug,plotOutput)
-
-    ord <- unique(plot[order(plot$regimen, plot$t_start),]$component)
-
-    plot$component <- factor(plot$component, levels = ord)
-
-    breaks <- seq(-14, max(plot$t_end)+5, 1)
-    tickLabels <- as.character(breaks)
-    tickLabels[!(breaks %% 28 == 0)] <- ''
-
-    overlapLines <- as.data.frame(matrix(ncol = 5))
-    overlapT <- plot[plot$regimen == "Yes",]
-    j <- 1
-
-    if(dim(overlapT)[1] > 1){
-      for(i in c(1:(dim(overlapT)[1]-1))){
-        if(overlapT[i,]$component==overlapT[i+1,]$component){
-          overlapLines[j,] <- c(as.numeric(overlapT[i,]$t_end),
-                                as.numeric(overlapT[i+1,]$t_start),
-                                as.character(overlapT[i,]$component),
-                                "Line","0")
-          j <- j + 1
-        }
-      }
-    }
-
-    colnames(overlapLines) <- colnames(plot)
-    overlapLines$t_start <- as.numeric(overlapLines$t_start)
-    overlapLines$t_end <- as.numeric(overlapLines$t_end)
-    overlapLines$component <- factor(overlapLines$component, levels = ord)
-
-    plot[plot$regimen=="Yes",]$t_start <- plot[plot$regimen=="Yes",]$t_start - 2
-    plot[plot$regimen=="Yes",]$t_end <- plot[plot$regimen=="Yes",]$t_end + 2
-
-    p1 <- ggplot2::ggplot(plot, ggplot2::aes(x = .data$t_start)) +
-        ggplot2::geom_rect(data = plot[plot$regimen=="Yes",],
-                              ggplot2::aes(ymin = as.numeric(.data$component)-0.3,
-                                            ymax = as.numeric(.data$component)+0.3,
-                                            xmin = .data$t_start,
-                                            xmax = .data$t_end, fill = .data$component)) +
-        ggplot2::geom_text(size = 3,
-                          data = plot[plot$regimen=="Yes",],
-                          ggplot2::aes(x = (.data$t_start+.data$t_end)/2,
-                                        y = as.numeric(.data$component)+0.5,
-                                        label=paste("S: ", round(100*as.numeric(.data$adjustedS),0)))) +
-        ggplot2::geom_point(data = plot[plot$regimen=="No",], size = 3,
-                            ggplot2::aes(x= .data$t_start,y= as.numeric(.data$component),
-                                        fill = .data$component), shape = 21) +
-        ggplot2::scale_y_continuous(labels = stringi::stri_trans_totitle(ord), breaks = seq(1,length(ord))) +
-        ggplot2::scale_x_continuous(breaks = seq(0,max(plot$t_end),28)) +
-        ggplot2::theme(panel.background = ggplot2::element_blank(),
-                      panel.grid.major = ggplot2::element_line(colour = "grey95"),
-                      legend.position = "none") +
-        ggplot2::xlab("") + ggplot2::ylab("") +
-        ggplot2::geom_segment(data = overlapLines, ggplot2::aes(y = as.numeric(.data$component),
-                                                                yend = as.numeric(.data$component),
-                                                                x = .data$t_start,
-                                                                xend = .data$t_end,
-                                                                colour = .data$component),
-                              linetype = 2, lwd = 1) +
-        ggplot2::scale_fill_viridis_d(drop=F) +
-        ggplot2::scale_color_viridis_d(drop=F) +
-        ggplot2::geom_hline(linetype = 3,
-                            yintercept = table(plot[!duplicated(plot$component),]$regimen == "No")[2]+0.5)
-
-    return(p1)
-
+  # Add patient_name if it does not exists
+  # It is used to facet plots so we can compare multiple patients
+  if(!"patient_name" %in% names(output)) {
+      output$patient_name = output$personID
   }
+
+  # Create dataframe for regimens
+  df = output %>%
+      select(
+          person_id = personID,
+          patient_name,
+          component,
+          time_start = t_start,
+          time_end = t_end,
+          adjustedS
+      ) %>%
+      mutate(time_end = ifelse(time_start == time_end, time_end + 1, time_end)) %>% 
+      mutate(case = "regimen", 
+            adjustedS = round(adjustedS, 2)) %>%
+      bind_rows(df) %>%
+      mutate(component = fct_reorder(component, time_start))
+
+  # Get unique components for drugs and regimens
+  patient_components <- unique(df$component[df$case == "drugs"])
+  regimen_components <- unique(df$component[df$case == "regimen"])
+
+  patient_components = as.character(patient_components)
+  regimen_components = as.character(regimen_components)
+  # Generate dynamic color palettes
+  if(length(patient_components) < 10) {
+      patient_colors <- setNames(brewer.pal(length(patient_components), "Set1"), patient_components)
+  } else {
+      patient_colors <- setNames(viridis(length(patient_components), option = "D"), patient_components)
+  }
+  regimen_colors <- setNames(brewer.pal(length(regimen_components), "Paired"), regimen_components)
+  # Combine color mappings
+  colors <- c(patient_colors, regimen_colors)
+  # Create separate aesthetics for drugs and regimens
+  df$patient_components_col <- ifelse(df$case == "drugs", as.character(df$component), NA)
+  df$regimen_components_col <- ifelse(df$case == "regimen", as.character(df$component), NA)
+
+  # Compute midpoints
+  df$mid_x <- (df$time_start + df$time_end) / 2
+
+  p = df %>%
+      ggplot() +
+      geom_segment(
+          aes(
+              x = time_start,
+              xend = time_end,
+              y = component,
+              yend = component,
+              color = patient_components_col
+          ),
+          linewidth = 2,
+          na.rm = TRUE
+      ) +
+      geom_segment(
+          aes(
+              x = time_start,
+              xend = time_end,
+              y = component,
+              yend = component,
+              color = regimen_components_col
+          ),
+          linewidth = 2,
+          na.rm = TRUE
+      ) +
+      geom_text(aes(x = mid_x, y = component, label = adjustedS), vjust = -0.5, size = 3) +
+      geom_point(aes(x = time_start, y = component, color = patient_components_col)) +
+      facet_grid(
+          cols = vars(person_id),
+          rows = vars(case),
+          scale = "free_y"
+      ) +
+      scale_color_manual(
+          name = "patient",
+          values = colors,
+          na.translate = FALSE,
+          guide = guide_legend(order = 1)
+      ) +
+      scale_color_manual(
+          name = "regimen",
+          values = colors,
+          na.translate = FALSE
+      ) +
+      guides(color = guide_legend(order = 3, override.aes = list(size = 3))) +
+      labs(x = "Time", y = "Component", title = "Time Intervals per Component") +
+      theme_bw() +
+      theme(legend.position = "none",
+            axis.text.y = element_markdown()) + # Move legends below
+      ggtitle(label = paste("Patient", unique(df$patient_name))) +
+      scale_y_discrete(labels = function(x) {
+          ifelse(!x %in% known_drugs & !x %in% df$component, 
+                paste0("**", x, "**"), x)
+      })
+
+    return(p)
 }
 
 #' Plot a full alignment output utilising an already

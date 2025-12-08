@@ -178,7 +178,7 @@ combineOverlaps <- function(df, regimenCombine) {
               adjustedS     = mean(adjustedS),
               Score         = mean(Score),
               totAlign      = sum(totAlign)
-            ), by = .(personID, regName, run_id)
+            ), by = .(personID, regName, run_id, DrugRecord_full)
             ][, run_id := NULL][, component := regName]
 
 

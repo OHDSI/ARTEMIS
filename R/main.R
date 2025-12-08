@@ -219,7 +219,7 @@ calculateEras <- function(processedAll, discontinuationTime = 120) {
                 t_start = min(t_start),
                 t_end = max(t_end),
                 timToEod = min(timeToEOD),
-                .by = c(component, newLine, personID)
+                .by = c(component, newLine, personID, DrugRecord_full)
             ) %>%
             dplyr::mutate(
                 regLength = t_end - t_start,
