@@ -10,6 +10,7 @@ Imports:
     reticulate (>= 1.27-9000),
     DatabaseConnector,
     dplyr,
+    tidyr,
     data.table,
     ggplot2,
     lubridate,

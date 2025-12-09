@@ -2,15 +2,18 @@
 % Please edit documentation in R/plots.R
 \name{plotFrequency}
 \alias{plotFrequency}
-\title{Plots a plot displaying the frequency of the top N most frequent regimens}
+\title{Plot frequency of the top N most frequent regimens}
 \usage{
-plotFrequency(processedAll, N = 10)
+plotFrequency(pa, top_n = 10)
 }
 \arguments{
-\item{processedAll}{An output dataframe created by processAlignments}
+\item{pa}{Patients alignments dataframe created by processAlignments}
 
-\item{N}{The number of top rows to plot}
+\item{top_n}{Top n most pfrequent regimens. Default is 10}
+}
+\value{
+plot - A ggplot object
 }
 \description{
-Plots a plot displaying the frequency of the top N most frequent regimens
+Plot frequency of the top N most frequent regimens
 }

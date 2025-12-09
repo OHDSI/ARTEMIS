@@ -2,22 +2,24 @@
 % Please edit documentation in R/plots.R
 \name{plotScoreDistribution}
 \alias{plotScoreDistribution}
-\title{Plots a plot displaying the observed score distribution for a given regimen, or two given regimens
+\title{Adjusted Score distribution plot
+Plot histogram and density of adjusted scores for regimens, or top regimens by prevelance
 processed output}
 \usage{
-plotScoreDistribution(regimen1, regimen2 = NA, processedAll)
+plotScoreDistribution(pa, components = NULL, top_n = 6)
 }
 \arguments{
-\item{regimen1}{A regimen of interest}
+\item{pa}{Patients alignments dataframe created by raw or processAlignments}
 
-\item{regimen2}{An optional regimen of interest for comparison}
+\item{components}{A set of regimens of interest}
 
-\item{processedAll}{An output dataframe created by processAlignments}
+\item{top_n}{Top n most prevalent regimens to plot. Ignored if components provided. Default is 6}
 }
 \value{
-regPlot - A ggplot object
+plot - A ggplot object
 }
 \description{
-Plots a plot displaying the observed score distribution for a given regimen, or two given regimens
+Adjusted Score distribution plot
+Plot histogram and density of adjusted scores for regimens, or top regimens by prevelance
 processed output
 }
