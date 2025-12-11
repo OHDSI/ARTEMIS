@@ -1,10 +1,7 @@
 # Example script that walks through running ARTEMIS, 
 # using the package’s included dummy database as input
-
-# If you are using a custom Python environment, 
-# specify the full path to the desired Python executable:
-# Sys.setenv(RETICULATE_PYTHON = "/full/path/to/python3")
 library(ARTEMIS)
+
 
 ##### Prepare input #####
 # Example: create connection details for a Redshift database using DatabaseConnector
@@ -69,24 +66,40 @@ output_all <- stringDF %>%
 ## Post-process Alignment
 
 processedAll <- output_all %>%
-    processAlignments(regimens = regimens, regimenCombine = 28)
+    processAlignments(regimens = regimens, 
+                      regimenCombine = 28)
 
-processedEras <- processedAll %>% calculateEras()
+pa <- processedAll %>% 
+    calculateEras()
 
-# To be decided what to do with generateRegimenStats and writeOutputs
-# Regimen stats does not work
-# regStats <- processedEras %>% generateRegimenStats()
+## Data analysis
+## Plot alignments for every patient 
 
-##### Save all outputs #####
-# 
-# writeOutputs(
-#     output_all,
-#     processedAll = processedAll,
-#     processedEras = processedEras,
-#     connectionDetails = connectionDetails,
-#     cdmSchema = cdmSchema,
-#     regGroups = regGroups,
-#     regStats = regStats,
-#     stringDF = stringDF,
-#     con_df = con_df
-# )
+p = list()
+persons = unique(pa$personID)
+
+for (i in persons) {
+    # Select one patient to plot; otherwise, only the first one will be plotted.
+    pa_i = pa[pa$personID == i, ]
+    p[[i]] = plotAlignment(pa_i)
+}
+
+# check graphs
+p
+# or save them in the current working directory
+pdf("graph_alignments.pdf", width = 8, height = 4)
+p
+dev.off()
+
+# Plot score distribution and regimen length distribution:
+plotScoreDistribution(pa)
+plotRegimenLengthDistribution(pa)
+
+# Calculate regimen stats
+
+regStats <- pa %>% 
+    generateRegimenStats()
+
+# Check regimen stats
+regStats
+
