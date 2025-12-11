@@ -3,9 +3,13 @@
 #' @param pa A patient alignment dataframe created by align()
 #' @return plot - A ggplot object
 #' @export
-#' @importFrom ggplot2 ggplot aes geom_segment geom_text geom_point facet_grid scale_color_manual guides labs theme_bw theme ggtitle scale_y_discrete
-#' @importFrom dplyr filter select distinct arrange mutate bind_rows group_by
+#' @importFrom ggplot2 ggplot aes geom_segment geom_text geom_point facet_grid
+#' @importFrom ggplot2 scale_color_manual guides labs theme_bw theme ggtitle scale_y_discrete guide_legend
+#' @importFrom ggtext element_markdown
+#' @importFrom dplyr filter select distinct arrange mutate bind_rows group_by arrange vars
+#' @importFrom forcats fct_reorder
 #' @importFrom tidyr separate_rows separate 
+#' @importFrom RColorBrewer brewer.pal
 plotAlignment <- function(pa, known_drugs = NULL){
   # Add patient_name if it does not exists
   # It is used to facet plots so we can compare multiple patients
@@ -145,6 +149,7 @@ plotAlignment <- function(pa, known_drugs = NULL){
 #' @return plot - A ggplot object
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_histogram geom_density geom_vline scale_linetype_manual ggtitle xlab ylab theme_minimal labs facet_wrap
+#' @importFrom dplyr filter group_by reframe
 plotScoreDistribution <- function(pa, components = NULL, top_n = 6) {
   # If component column does not exist, create it from regName
   if(!"component" %in% names(pa) & "regName" %in% names(pa)){

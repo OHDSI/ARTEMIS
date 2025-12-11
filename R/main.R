@@ -88,8 +88,6 @@ generateRawAlignments <- function(stringDF,
 }
 
 
-
-
 #' Perform post-processing on a data frame of raw alignment results
 #' @param rawOutput An output dataframe produced by generateRawAlignments()
 #' @param regimenCombine The numeric value of days allowed between regimens of the same
@@ -312,7 +310,8 @@ generateRegimenStats <- function(processedEras) {
     return(aggregated_Processed_Data)
 }
 
-#' A function to conveniently generate several stats relating to the input cohort
+
+#' Generate several stats related to the input cohort
 #' @param connectionDetails A set of DatabaseConnector connectiondetails
 #' @param cdmSchema A schema containing a valid OMOP CDM
 #' @param stringDF A stringDF object containing all valid patients (i.e., those who have exposure
