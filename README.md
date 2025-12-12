@@ -265,22 +265,6 @@ Finally, basic statistics is providedy by:
     regStats <- processedEras %>% g
             enerateRegimenStats()
 
-### Output
-
-Finally, a set of outputs may be produced and written into a local file
-using the writeOutputs() function. No patient IDs are written as
-outputs, with anonymised random IDs being used in their place. Both
-writeOuputs() and plotSankey() produce outputs that are automatically
-saved to the local working directory.
-
-writeOutputs also produces data about the underlying cohorts used to
-construct the regimen outputs, and so also requires a call to the
-connection via DatabaseConnector directly.
-
-    writeOutputs(output_all, processedAll = processedAll, processedEras = processedEras,
-                 connectionDetails = connectionDetails, cdmSchema = cdmSchema,
-                 regGroups = regGroups, regStats = regStats, stringDF = stringDF, 
-                 con_df = con_df)
 
 ## Getting help
 
