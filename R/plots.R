@@ -141,11 +141,11 @@ plotAlignment <- function(pa, known_drugs = NULL){
 
 
 #' Adjusted Score distribution plot
-#' Plot histogram and density of adjusted scores for regimens, or top regimens by prevelance
+#' Plot histogram and density of adjusted scores for regimens, or top regimens by frequency
 #' processed output
 #' @param pa Patients alignments dataframe created by raw or processAlignments
 #' @param components A set of regimens of interest
-#' @param top_n Top n most prevalent regimens to plot. Ignored if components provided. Default is 6
+#' @param top_n Top n most frequent regimens to plot. Ignored if components provided. Default is 6
 #' @return plot - A ggplot object
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_histogram geom_density geom_vline scale_linetype_manual ggtitle xlab ylab theme_minimal labs facet_wrap
@@ -187,7 +187,7 @@ plotScoreDistribution <- function(pa, components = NULL, top_n = 6) {
       geom_vline(
           data = score_stats,
           aes(xintercept = value, linetype = linetype),
-          size = 1,
+          linewidth = 1,
           col = "lightblue3"
       ) +
       scale_linetype_manual(
@@ -217,7 +217,7 @@ plotScoreDistribution <- function(pa, components = NULL, top_n = 6) {
 #' processed output
 #' @param pa Patients alignments dataframe created by processAlignments
 #' @param components A set of regimens of interest
-#' @param top_n Top n most prevalent regimens to plot. Ignored if components provided. Default is 6
+#' @param top_n Top n most frequent regimens to plot. Ignored if components provided. Default is 6
 #' @return plot - A ggplot object
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_histogram geom_density geom_vline scale_linetype_manual theme_minimal labs xlab ylab facet_wrap
@@ -287,7 +287,7 @@ plotRegimenLengthDistribution <- function(pa, components = NULL, top_n = 6) {
 
 #' Plot frequency of the top N most frequent regimens
 #' @param pa Patients alignments dataframe created by processAlignments
-#' @param top_n Top n most pfrequent regimens. Default is 10
+#' @param top_n Top n most frequent regimens. Default is 10
 #' @return plot - A ggplot object
 #' @export
 #' @importFrom dplyr count mutate slice_head
@@ -298,7 +298,7 @@ plotFrequency <- function(pa, top_n = 10) {
     pa$component <- pa$regName
   }
   # calculate frequency of each regimen  
-  freqPlot = pae %>%
+  freqPlot = pa %>%
     count(component, sort = T) %>%
     mutate(f = n / sum(n)) %>%
     slice_head(n = top_n) %>% 

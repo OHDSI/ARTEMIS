@@ -2,7 +2,7 @@
 % Please edit documentation in R/main.R
 \name{generateCohortStats}
 \alias{generateCohortStats}
-\title{A function to conveniently generate several stats relating to the input cohort}
+\title{Generate several stats related to the input cohort}
 \usage{
 generateCohortStats(connectionDetails, cdmSchema, con_df, stringDF)
 }
@@ -21,5 +21,5 @@ A dataframe containing various summary statistics regarding the age of treated
 and untreated patients
 }
 \description{
-A function to conveniently generate several stats relating to the input cohort
+Generate several stats related to the input cohort
 }

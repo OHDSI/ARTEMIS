@@ -11,7 +11,7 @@ Although applicable to various contexts, ARTEMIS is primarily intended for cance
 
 
 <figure>
-<img src="/img/Workflow_Detailed.png?" alt="ARTEMIS Workflow" />
+<img src="./img/Workflow_Detailed.png?" alt="ARTEMIS Workflow" />
 <figcaption aria-hidden="true">ARTEMIS Workflow</figcaption>
 </figure>
 
@@ -217,28 +217,53 @@ submission to an episode era table.
     processedAll <- output_all %>% 
             processAlignments(regimenCombine = 28, regimens = regimens)
 
-    processedEras <- processedAll %>% 
-            calculateEras()
+Treatment trajectories, or regimen eras, can then be calculated, adding
+further information about the relative sequencing order of different
+regimens and regimen types.
 
-    # regStats <- processedEras %>% generateRegimenStats()
+    pa <- processedAll %>% 
+            calculateEras(discontinuationTime = 90)
+
+
+Individual patient regimens can be visualized using `plotAlignment`.
+
+```
+p <- list()
+persons <- unique(pa$personID)
+
+for (i in persons) {
+    # Select one patient to plot; otherwise, only the first one will be plotted.
+    pa_i <- pa[pa$personID == i, ]
+    p[[i]] <- plotAlignment(pa_i)
+}
+
+p
+```
+
+<figure>
+<img src="./img/alignment_example.png?" alt="ARTEMIS Workflow" />
+<figcaption aria-hidden="true">Visualization of Aligned Regimens</figcaption>
+</figure>
+
 
 Data may then be further explored via several graphics which indicate
 various information, such as regimen frequency or the score/length
 distributions of a given regimen.
 
-    plotFrequency(processedAll)
+    plotFrequency(pa)
+    plotScoreDistribution(pa)
+    plotRegimenLengthDistribution(pa)
 
-    plotScoreDistribution(regimen1 = "Paclitaxel Monotherapy", regimen2 = "Pembrolizumab Monotherapy", processedAll = processedAll)
+These functions display the most frequent regimens, but additional regimens can also be specified.
 
-    plotRegimenLengthDistribution(regimen1 = "Paclitaxel Monotherapy", regimen2 = "Pembrolizumab Monotherapy", processedAll = processedAll)
+    plotScoreDistribution(pa, components = c("Pembrolizumab monotherapy"))
+    plotRegimenLengthDistribution(pa, components = c("Pembrolizumab monotherapy"))
 
-Treatment trajectories, or regimen eras, can then be calculated, adding
-further information about the relative sequencing order of different
-regimens and regimen types.
 
-    processedEras <- processedAll %>% calculateEras(discontinuationTime = 90)
+Finally, basic statistics is providedy by: 
 
-    regStats <- processedEras %>% generateRegimenStats()
+    regStats <- processedEras %>% g
+            enerateRegimenStats()
 
 ### Output
 

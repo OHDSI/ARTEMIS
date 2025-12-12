@@ -9,7 +9,7 @@ plotFrequency(pa, top_n = 10)
 \arguments{
 \item{pa}{Patients alignments dataframe created by processAlignments}
 
-\item{top_n}{Top n most pfrequent regimens. Default is 10}
+\item{top_n}{Top n most frequent regimens. Default is 10}
 }
 \value{
 plot - A ggplot object

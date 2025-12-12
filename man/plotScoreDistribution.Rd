@@ -3,7 +3,7 @@
 \name{plotScoreDistribution}
 \alias{plotScoreDistribution}
 \title{Adjusted Score distribution plot
-Plot histogram and density of adjusted scores for regimens, or top regimens by prevelance
+Plot histogram and density of adjusted scores for regimens, or top regimens by frequency
 processed output}
 \usage{
 plotScoreDistribution(pa, components = NULL, top_n = 6)
@@ -13,13 +13,13 @@ plotScoreDistribution(pa, components = NULL, top_n = 6)
 
 \item{components}{A set of regimens of interest}
 
-\item{top_n}{Top n most prevalent regimens to plot. Ignored if components provided. Default is 6}
+\item{top_n}{Top n most frequent regimens to plot. Ignored if components provided. Default is 6}
 }
 \value{
 plot - A ggplot object
 }
 \description{
 Adjusted Score distribution plot
-Plot histogram and density of adjusted scores for regimens, or top regimens by prevelance
+Plot histogram and density of adjusted scores for regimens, or top regimens by frequency
 processed output
 }

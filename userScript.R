@@ -75,13 +75,13 @@ pa <- processedAll %>%
 ## Data analysis
 ## Plot alignments for every patient 
 
-p = list()
-persons = unique(pa$personID)
+p <- list()
+persons <- unique(pa$personID)
 
 for (i in persons) {
     # Select one patient to plot; otherwise, only the first one will be plotted.
-    pa_i = pa[pa$personID == i, ]
-    p[[i]] = plotAlignment(pa_i)
+    pa_i <- pa[pa$personID == i, ]
+    p[[i]] <- plotAlignment(pa_i)
 }
 
 # check graphs
@@ -91,9 +91,19 @@ pdf("graph_alignments.pdf", width = 8, height = 4)
 p
 dev.off()
 
-# Plot score distribution and regimen length distribution:
+# Plot score distribution and regimen length distribution
+# of the most frequent regimens: 
 plotScoreDistribution(pa)
 plotRegimenLengthDistribution(pa)
+
+# you could also specify your regimens of interest: 
+plotScoreDistribution(pa, components = c("Pembrolizumab monotherapy"))
+plotRegimenLengthDistribution(pa, components = c("Pembrolizumab monotherapy"))
+
+
+# Plot frequency of the top n most frequent regimens: 
+
+plotFrequency(pa, top_n = 10)
 
 # Calculate regimen stats
 
