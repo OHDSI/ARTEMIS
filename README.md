@@ -15,6 +15,8 @@ Although applicable to various contexts, ARTEMIS is primarily intended for cance
 <figcaption aria-hidden="true">ARTEMIS Workflow</figcaption>
 </figure>
 
+### Quick to Docs:
+* See [release notes](docs/branch-versioning.md) for versioning and contribution.
 
 ## Installation
 
