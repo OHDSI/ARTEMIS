@@ -259,7 +259,7 @@ plotRegimenLengthDistribution <- function(pa, components = NULL, top_n = 6) {
       geom_vline(
           data = score_stats,
           aes(xintercept = value, linetype = linetype),
-          size = 1,
+          linewidth = 1,
           col = "lightblue3"
       ) +
       scale_linetype_manual(

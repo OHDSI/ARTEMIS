@@ -63,13 +63,10 @@ SELECT * FROM filtered_drug_exposure;
 #' Generate a set of patient drug record strings from a valid CDM connection and
 #' a valid cohort JSON.
 #' @param con_df A con_df dataframe returned by getCohortSet()
-#' @param writeOut A variable indicating whether to save the set of drug records
-#' @param outputName The name for a given written output
-#' as a local file
 #' @param validDrugs A dataframe containing a set of validDrugs
 #' @return A dataframe containing the relevant patients and their drug exposure strings
 #' @export
-stringDF_from_cdm <- function(con_df, writeOut=TRUE, outputName = "Output", validDrugs) {
+stringDF_from_cdm <- function(con_df, validDrugs) {
 
   cli::cat_bullet("Filtering dataframe to valid drugs only...",
                   bullet_col = "yellow", bullet = "info")
@@ -99,11 +96,6 @@ stringDF_from_cdm <- function(con_df, writeOut=TRUE, outputName = "Output", vali
 
   con_df_out2$seq <- gsub(" ","",gsub(",","_",con_df_out2$seq))
 
-  if(writeOut == TRUE){
-    outputFile <- here::here()
-    write.csv(file = paste(outputFile,"/",outputName,".csv",sep=""), x = con_df_out2, append = FALSE)
-  }
-
   cli::cat_bullet("Complete!",
                   bullet_col = "green", bullet = "tick")
 
@@ -118,7 +110,7 @@ stringDF_from_cdm <- function(con_df, writeOut=TRUE, outputName = "Output", vali
 #' @return A filtered dataframe containing the relevant patients and their
 #' drug exposure strings
 #' @export
-filter_stringDF <- function(stringDF,min) {
+filter_stringDF <- function(stringDF, min) {
 
   stringDF <- stringDF %>%
     dplyr::mutate(Count = stringr::str_count(seq, ";") + 1)
@@ -132,7 +124,7 @@ filter_stringDF <- function(stringDF,min) {
 #' Load the default valid drugs dataframe
 #' @param absolute Optional. Absolute path to a custom `.rda` file containing the `validdrugs` dataset. If not provided, the function loads from the `ARTEMIS` package.
 #' @export
-loadDrugs <- function(absolute=NULL) {
+loadDrugs <- function(absolute = NULL) {
    if (!is.null(absolute)) {
     if (!file.exists(absolute)) {
       stop(paste("Error: The specified file", absolute, "was not found."))

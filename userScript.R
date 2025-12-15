@@ -49,11 +49,13 @@ con_df$drug_exposure_start_date <- as.POSIXct(con_df$drug_exposure_start_date,
 
 # Prepare a data.frame of patient drug records used in the alignment step
 stringDF <- stringDF_from_cdm(con_df = con_df,
-                              writeOut = F,
                               validDrugs = validdrugs)
 
-## Alignment
+# check patients
+stringDF
 
+
+## Alignment
 output_all <- stringDF %>%
     generateRawAlignments(
         regimens = regimens,
@@ -63,8 +65,8 @@ output_all <- stringDF %>%
         verbose = 0
     )
 
-## Post-process Alignment
 
+## Post-process Alignment
 processedAll <- output_all %>%
     processAlignments(regimens = regimens, 
                       regimenCombine = 28)
