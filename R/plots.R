@@ -30,9 +30,9 @@ plotAlignment <- function(pa, known_drugs = NULL) {
         )
     p_plots = list()    
     for (p in patients) {
-      p_pa = pa %>%
+      p_pa <- pa %>%
           filter(patient_name == p)
-      p_plot = plotAlignment(p_pa, known_drugs = known_drugs)
+      p_plot <- plotAlignment(p_pa, known_drugs = known_drugs)
       p_plots[[as.character(p)]] = p_plot
     }
     return(p_plots)
@@ -42,9 +42,17 @@ plotAlignment <- function(pa, known_drugs = NULL) {
   pa = pa %>%
       filter(patient_name == patients[1])
 
+  # check if t_start and t_end columns exist
+  if (!all(c("t_start","t_end") %in% names(pa))) {
+    drugRec <- encode(pa$DrugRecord_full[1])
+    drugDF <- createDrugDF(drugRec)
+    pa <- add_cumultive_times_to_df(pa, drugDF)
+    pa$component <- pa$regName  
+  }
+
   # Create dataframe for drugs. 
   # Use patient drug record to create cumulative times
-  df = pa %>%
+  df <- pa %>%
       select(person_id = personID, seq = DrugRecord_full) %>% 
       distinct() %>% 
       separate_rows(seq, sep = ";") %>%
@@ -60,7 +68,7 @@ plotAlignment <- function(pa, known_drugs = NULL) {
       arrange(time)
 
   # Create dataframe for regimens
-  df = pa %>%
+  df <- pa %>%
       select(
           person_id = personID,
           patient_name,
@@ -97,7 +105,7 @@ plotAlignment <- function(pa, known_drugs = NULL) {
   # Compute midpoints
   df$mid_x <- (df$t_start + df$t_end) / 2
 
-  p = df %>%
+  p <- df %>%
       ggplot() +
       geom_segment(
           aes(
