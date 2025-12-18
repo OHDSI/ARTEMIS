@@ -2,8 +2,7 @@
 % Please edit documentation in R/plots.R
 \name{plotRegimenLengthDistribution}
 \alias{plotRegimenLengthDistribution}
-\title{Plots a plot displaying the observed regimen length distribution for a given regimen, or two given regimens
-processed output}
+\title{Plot Regimen Length Distribution}
 \usage{
 plotRegimenLengthDistribution(pa, components = NULL, top_n = 6)
 }

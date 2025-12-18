@@ -1,7 +1,8 @@
 #' Plots a full alignment output
-#' For each patient 
+#' 
+#' For each patient separately, plot drug exposures and aligned regimens over time
 #' @param pa A patient alignment dataframe created by align()
-#' @return plot - A ggplot object
+#' @return plot - A list of ggplot objects
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_segment geom_text geom_point facet_grid
 #' @importFrom ggplot2 scale_color_manual guides labs theme_bw theme ggtitle scale_y_discrete guide_legend
@@ -17,16 +18,29 @@ plotAlignment <- function(pa, known_drugs = NULL){
       pa$patient_name = pa$personID
   }
 
-  if (length(unique(pa$patient_name)) > 1) {
+  # In case there are multiple patients in the dataframe
+  # run this function for each patient separately
+  patients = unique(pa$patient_name)
+
+  if (length(patients) > 1) {
     cli::cat_bullet(
-            paste("Multiple patients detected, only the first one will be plotted.", sep = ""),
+            paste("Multiple patients detected", sep = ""),
             bullet_col = "yellow",
             bullet = "info"
         )
+    p_plots = list()    
+    for (p in patients) {
+      p_pa = pa %>%
+          filter(patient_name == p)
+      p_plot = plotAlignment(p_pa, known_drugs = known_drugs)
+      p_plots[[as.character(p)]] = p_plot
+    }
+    return(p_plots)
   }
 
+  # Plot now for a single patient
   pa = pa %>%
-      filter(patient_name == pa$patient_name[1])
+      filter(patient_name == patients[1])
 
   # Create dataframe for drugs. 
   # Use patient drug record to create cumulative times
@@ -141,6 +155,7 @@ plotAlignment <- function(pa, known_drugs = NULL){
 
 
 #' Adjusted Score distribution plot
+#' 
 #' Plot histogram and density of adjusted scores for regimens, or top regimens by frequency
 #' processed output
 #' @param pa Patients alignments dataframe created by raw or processAlignments
@@ -213,6 +228,8 @@ plotScoreDistribution <- function(pa, components = NULL, top_n = 6) {
 }
 
 
+#' Plot Regimen Length Distribution
+#' 
 #' Plots a plot displaying the observed regimen length distribution for a given regimen, or two given regimens
 #' processed output
 #' @param pa Patients alignments dataframe created by processAlignments
@@ -285,6 +302,7 @@ plotRegimenLengthDistribution <- function(pa, components = NULL, top_n = 6) {
 }
 
 
+#' Plot Regimen Frequency
 #' Plot frequency of the top N most frequent regimens
 #' @param pa Patients alignments dataframe created by processAlignments
 #' @param top_n Top n most frequent regimens. Default is 10

@@ -2,9 +2,7 @@
 % Please edit documentation in R/plots.R
 \name{plotScoreDistribution}
 \alias{plotScoreDistribution}
-\title{Adjusted Score distribution plot
-Plot histogram and density of adjusted scores for regimens, or top regimens by frequency
-processed output}
+\title{Adjusted Score distribution plot}
 \usage{
 plotScoreDistribution(pa, components = NULL, top_n = 6)
 }
@@ -19,7 +17,6 @@ plotScoreDistribution(pa, components = NULL, top_n = 6)
 plot - A ggplot object
 }
 \description{
-Adjusted Score distribution plot
 Plot histogram and density of adjusted scores for regimens, or top regimens by frequency
 processed output
 }

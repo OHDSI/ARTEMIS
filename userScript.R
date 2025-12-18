@@ -77,17 +77,10 @@ pa <- processedAll %>%
 ## Data analysis
 ## Plot alignments for every patient 
 
-p <- list()
-persons <- unique(pa$personID)
-
-for (i in persons) {
-    # Select one patient to plot; otherwise, only the first one will be plotted.
-    pa_i <- pa[pa$personID == i, ]
-    p[[i]] <- plotAlignment(pa_i)
-}
-
+p <- plotAlignment(pa)
 # check graphs
 p
+
 # or save them in the current working directory
 pdf("graph_alignments.pdf", width = 8, height = 4)
 p

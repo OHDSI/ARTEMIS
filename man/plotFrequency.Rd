@@ -2,7 +2,8 @@
 % Please edit documentation in R/plots.R
 \name{plotFrequency}
 \alias{plotFrequency}
-\title{Plot frequency of the top N most frequent regimens}
+\title{Plot Regimen Frequency
+Plot frequency of the top N most frequent regimens}
 \usage{
 plotFrequency(pa, top_n = 10)
 }
@@ -15,5 +16,6 @@ plotFrequency(pa, top_n = 10)
 plot - A ggplot object
 }
 \description{
+Plot Regimen Frequency
 Plot frequency of the top N most frequent regimens
 }

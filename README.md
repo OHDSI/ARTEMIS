@@ -230,15 +230,7 @@ regimens and regimen types.
 Individual patient regimens can be visualized using `plotAlignment`.
 
 ```
-p <- list()
-persons <- unique(pa$personID)
-
-for (i in persons) {
-    # Select one patient to plot; otherwise, only the first one will be plotted.
-    pa_i <- pa[pa$personID == i, ]
-    p[[i]] <- plotAlignment(pa_i)
-}
-
+p <- plotAlignment(pa)
 p
 ```
 
