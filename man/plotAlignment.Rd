@@ -7,7 +7,7 @@
 plotAlignment(pa, known_drugs = NULL)
 }
 \arguments{
-\item{pa}{A patient alignment dataframe created by align()}
+\item{pa}{A patient alignment dataframe created by processAlignments() or calculateEras}
 }
 \value{
 plot - A list of ggplot objects

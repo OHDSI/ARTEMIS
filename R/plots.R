@@ -1,7 +1,7 @@
 #' Plots a full alignment output
 #' 
 #' For each patient separately, plot drug exposures and aligned regimens over time
-#' @param pa A patient alignment dataframe created by align()
+#' @param pa A patient alignment dataframe created by processAlignments() or calculateEras
 #' @return plot - A list of ggplot objects
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_segment geom_text geom_point facet_grid
@@ -11,7 +11,7 @@
 #' @importFrom forcats fct_reorder
 #' @importFrom tidyr separate_rows separate 
 #' @importFrom RColorBrewer brewer.pal
-plotAlignment <- function(pa, known_drugs = NULL){
+plotAlignment <- function(pa, known_drugs = NULL) {
   # Add patient_name if it does not exists
   # It is used to facet plots so we can compare multiple patients
   if(!"patient_name" %in% names(pa)) {
