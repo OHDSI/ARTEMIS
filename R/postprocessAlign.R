@@ -152,19 +152,23 @@ removeOverlaps <- function(df) {
     return(df)
 }
 
-#' Combines overlapping regimens from alignment output
-#' We only merge same regimens, next to each other chronologically
-#' We sort chronologically
-#' Create id for consecutive regimens and remove if distance is larger than regimenCombine
+#' Combine Overlaps
+#' 
+#' Merge overlapping regimens in alignment output.
+#' Regimens are only merged if they are identical and occur consecutively in time.
 #' @param output An output dataframe created by align()
 #' @param regimenCombine Allowed days between same regimen before being combined
 #' @export
 #' 
 combineOverlaps <- function(df, regimenCombine) {
+    # Create id for consecutive regimens and remove if distance is larger than regimenCombine
     dt <- df
     data.table::setDT(dt)
     # TODO: remove regName to disable regimen overlap 
     data.table::setorder(dt, regName, t_start, t_end)
+
+    # use cumulative max time, in case previous regimen extended further
+    dt[, t_end := cummax(t_end), by = regName]
 
     dt[, run_id := cumsum(
         c(TRUE, regName[-1] != regName[-.N] | (t_start[-1] - t_end[-.N]) >= regimenCombine)
