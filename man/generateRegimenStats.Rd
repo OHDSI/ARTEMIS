@@ -2,7 +2,7 @@
 % Please edit documentation in R/main.R
 \name{generateRegimenStats}
 \alias{generateRegimenStats}
-\title{Generates a data frame containing summary stats from processed regimen data}
+\title{Generate Regimen Stats}
 \usage{
 generateRegimenStats(processedEras)
 }
@@ -13,5 +13,5 @@ generateRegimenStats(processedEras)
 A data frame containing summary stats from processed regimen data
 }
 \description{
-Generates a data frame containing summary stats from processed regimen data
+Generates a data frame containing summary stats from processed regimen data.
 }
