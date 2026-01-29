@@ -6,10 +6,15 @@ calculate_gaps <- function(pa, t_init, t_final) {
   covered <- unique(unlist(
       mapply(seq, pa$t_start, pa$t_end, SIMPLIFY = FALSE)
   ))
+
+
   
   full <- seq(t_init, t_final)
-  
   uncovered <- setdiff(full, covered)
+
+  if (length(uncovered) < 1) {
+    return(data.frame())
+  }
   
   runs <- split(uncovered, cumsum(c(1, diff(uncovered) != 1)))
   
