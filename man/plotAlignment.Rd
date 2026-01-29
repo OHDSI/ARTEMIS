@@ -4,10 +4,14 @@
 \alias{plotAlignment}
 \title{Plots a full alignment output}
 \usage{
-plotAlignment(pa, known_drugs = NULL)
+plotAlignment(pa, regimens = NULL, show_gaps = FALSE)
 }
 \arguments{
 \item{pa}{A patient alignment dataframe created by processAlignments() or calculateEras}
+
+\item{regimens}{A regimen dataframe, containing required regimen shortStrings}
+
+\item{show_gaps}{Logical indicating whether to show gaps between regimens as "No regimen"}
 }
 \value{
 plot - A list of ggplot objects

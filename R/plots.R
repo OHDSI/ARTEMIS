@@ -1,7 +1,36 @@
+
+#' Calculate gaps between regimens
+#'
+calculate_gaps <- function(pa, t_init, t_final) {
+  # break all intervals into days
+  covered <- unique(unlist(
+      mapply(seq, pa$t_start, pa$t_end, SIMPLIFY = FALSE)
+  ))
+  
+  full <- seq(t_init, t_final)
+  
+  uncovered <- setdiff(full, covered)
+  
+  runs <- split(uncovered, cumsum(c(1, diff(uncovered) != 1)))
+  
+  gaps <- data.frame(
+      t_start = sapply(runs, min),
+      t_end   = sapply(runs, max), 
+      patient_name = pa$patient_name[1], 
+      personID = pa$personID[1], 
+      component = "No regimen", 
+      adjustedS = NA
+  )
+  gaps
+}
+
+
 #' Plots a full alignment output
-#' 
+#'
 #' For each patient separately, plot drug exposures and aligned regimens over time
 #' @param pa A patient alignment dataframe created by processAlignments() or calculateEras
+#' @param regimens A regimen dataframe, containing required regimen shortStrings
+#' @param show_gaps Logical indicating whether to show gaps between regimens as "No regimen"
 #' @return plot - A list of ggplot objects
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_segment geom_text geom_point facet_grid
@@ -9,47 +38,61 @@
 #' @importFrom ggtext element_markdown
 #' @importFrom dplyr filter select distinct arrange mutate bind_rows group_by arrange vars
 #' @importFrom forcats fct_reorder
-#' @importFrom tidyr separate_rows separate 
+#' @importFrom tidyr separate_rows separate
 #' @importFrom RColorBrewer brewer.pal
-plotAlignment <- function(pa, known_drugs = NULL) {
+plotAlignment <- function(pa, regimens = NULL, show_gaps = FALSE) {
   # Add patient_name if it does not exists
   # It is used to facet plots so we can compare multiple patients
   if(!"patient_name" %in% names(pa)) {
       pa$patient_name = pa$personID
   }
-
+  
   # In case there are multiple patients in the dataframe
   # run this function for each patient separately
   patients = unique(pa$patient_name)
-
+  
   if (length(patients) > 1) {
-    cli::cat_bullet(
-            paste("Multiple patients detected", sep = ""),
-            bullet_col = "yellow",
-            bullet = "info"
-        )
-    p_plots = list()    
-    for (p in patients) {
-      p_pa <- pa %>%
-          filter(patient_name == p)
-      p_plot <- plotAlignment(p_pa, known_drugs = known_drugs)
-      p_plots[[as.character(p)]] = p_plot
-    }
-    return(p_plots)
+      cli::cat_bullet(
+          paste("Multiple patients detected", sep = ""),
+          bullet_col = "yellow",
+          bullet = "info"
+      )
+      p_plots = list()    
+      for (p in patients) {
+          p_pa <- pa %>%
+              filter(patient_name == p)
+          p_plot <- plotAlignment(p_pa, regimens = regimens, show_gaps = show_gaps)
+          p_plots[[as.character(p)]] = p_plot
+      }
+      return(p_plots)
   }
-
+  
   # Plot now for a single patient
+
+  ## Initial run
+  ## Get known drugs from regimens if provided
+  known_drugs = c()
+  if (!is.null(regimens)) {
+    known_drugs = regimens %>% 
+      pull(shortString) %>% 
+      str_split(";") %>% 
+      unlist() %>% 
+      str_replace("^.*?\\.", "") %>% 
+      unique()
+
+  }
+  
   pa = pa %>%
       filter(patient_name == patients[1])
-
+  
   # check if t_start and t_end columns exist
   if (!all(c("t_start","t_end") %in% names(pa))) {
-    drugRec <- encode(pa$DrugRecord_full[1])
-    drugDF <- createDrugDF(drugRec)
-    pa <- add_cumultive_times_to_df(pa, drugDF)
-    pa$component <- pa$regName  
+      drugRec <- encode(pa$DrugRecord_full[1])
+      drugDF <- createDrugDF(drugRec)
+      pa <- add_cumultive_times_to_df(pa, drugDF)
+      pa$component <- pa$regName  
   }
-
+  
   # Create dataframe for drugs. 
   # Use patient drug record to create cumulative times
   df <- pa %>%
@@ -66,7 +109,18 @@ plotAlignment <- function(pa, known_drugs = NULL) {
           person_id = as.character(person_id)
       ) %>%
       arrange(time)
-
+  
+  # We want to plot gaps - no regimen intervals
+  # get the first and last time from drugs to create gaps
+  if (show_gaps) {
+      t_init = min(df$t_start)
+      t_final = max(df$t_end)
+      
+      pa_gaps = calculate_gaps(pa, t_init, t_final)
+      pa = pa %>%
+          bind_rows(pa_gaps)
+  }
+  
   # Create dataframe for regimens
   df <- pa %>%
       select(
@@ -79,14 +133,17 @@ plotAlignment <- function(pa, known_drugs = NULL) {
       ) %>%
       mutate(t_end = ifelse(t_start == t_end, t_end + 1, t_end)) %>% 
       mutate(case = "regimen", 
-            adjustedS = round(adjustedS, 2)) %>%
+              adjustedS = round(adjustedS, 2)) %>%
       bind_rows(df) %>%
       mutate(component = fct_reorder(component, t_start))
-
+  
+  # Add gaps where we do not have regimens: 
+  
+  
   # Get unique components for drugs and regimens
   patient_components <- unique(df$component[df$case == "drugs"])
   regimen_components <- unique(df$component[df$case == "regimen"])
-
+  
   patient_components = as.character(patient_components)
   regimen_components = as.character(regimen_components)
   # Generate dynamic color palettes
@@ -96,15 +153,21 @@ plotAlignment <- function(pa, known_drugs = NULL) {
       patient_colors <- setNames(viridis(length(patient_components), option = "D"), patient_components)
   }
   regimen_colors <- setNames(brewer.pal(length(regimen_components), "Paired"), regimen_components)
+  
+  # just change gap color to black
+  if ("No regimen" %in% names(regimen_colors)) {
+      regimen_colors["No regimen"] <- "black"
+  }
+  
   # Combine color mappings
   colors <- c(patient_colors, regimen_colors)
   # Create separate aesthetics for drugs and regimens
   df$patient_components_col <- ifelse(df$case == "drugs", as.character(df$component), NA)
   df$regimen_components_col <- ifelse(df$case == "regimen", as.character(df$component), NA)
-
+  
   # Compute midpoints
   df$mid_x <- (df$t_start + df$t_end) / 2
-
+  
   p <- df %>%
       ggplot() +
       geom_segment(
@@ -155,10 +218,10 @@ plotAlignment <- function(pa, known_drugs = NULL) {
       ggtitle(label = paste("Patient", unique(df$patient_name))) +
       scale_y_discrete(labels = function(x) {
           ifelse(!x %in% known_drugs & !x %in% df$component, 
-                paste0("**", x, "**"), x)
+                  paste0("**", x, "**"), x)
       })
-
-    return(p)
+  
+  return(p)
 }
 
 
