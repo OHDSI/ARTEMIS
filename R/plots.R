@@ -76,9 +76,9 @@ plotAlignment <- function(pa, regimens = NULL, show_gaps = FALSE) {
 
   ## Initial run
   ## Get known drugs from regimens if provided
-  known_drugs = c()
+  known_drugs <- c()
   if (!is.null(regimens)) {
-    known_drugs = regimens %>% 
+    known_drugs <- regimens %>% 
       pull(shortString) %>% 
       str_split(";") %>% 
       unlist() %>% 
@@ -118,11 +118,11 @@ plotAlignment <- function(pa, regimens = NULL, show_gaps = FALSE) {
   # We want to plot gaps - no regimen intervals
   # get the first and last time from drugs to create gaps
   if (show_gaps) {
-      t_init = min(df$t_start)
-      t_final = max(df$t_end)
+      t_init <- min(df$t_start)
+      t_final <- max(df$t_end)
       
-      pa_gaps = calculate_gaps(pa, t_init, t_final)
-      pa = pa %>%
+      pa_gaps <- calculate_gaps(pa, t_init, t_final)
+      pa <- pa %>%
           bind_rows(pa_gaps)
   }
   
