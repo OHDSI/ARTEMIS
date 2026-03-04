@@ -40,8 +40,8 @@
 #' @export
 generateRawAlignments <- function(stringDF,
                                   regimens,
-                                  g,
-                                  Tfac,
+                                  g = 0.4,
+                                  Tfac = 0.5,
                                   s = NULL,
                                   verbose = 0,
                                   mem = -1,
