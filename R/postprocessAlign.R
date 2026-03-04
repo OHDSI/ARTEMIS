@@ -218,12 +218,12 @@ postprocessDF <- function(output, regimenCombine = 28) {
     # Calculate time to next regimen, 0 if negative
     df$timeToNextRegimen <- 0
     df$timeToEOD <- 0
-  
+
     df <- df %>%
         dplyr::arrange(t_start) %>%
-        dplyr::mutate(timeToNextRegimen = pmax(0, dplyr::lead(t_start) - t_end)) %>%
+        dplyr::mutate(timeToNextRegimen = pmax(0, dplyr::lead(t_start, default = 0) - t_start)) %>%
         dplyr::mutate(regLength = (t_end - t_start) + 1)    
-
+    
     endOfData <- max(drugDF$t_start)
     df[nrow(df),]$timeToEOD <- endOfData - df[nrow(df),]$t_end
 

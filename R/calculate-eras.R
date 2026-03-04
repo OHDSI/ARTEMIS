@@ -57,7 +57,7 @@ calculateEras_one <- function(pa, discontinuationTime = 120) {
     }
         
     pa <- pa %>%
-        dplyr::mutate(timeToNextRegimen = dplyr::lead(t_start) - t_end)
+        dplyr::mutate(timeToNextRegimen = pmax(0, dplyr::lead(t_start, default = 0) - t_start))
 
     # if the time gap between two consecutive regimens is smaller than discontinuationTime,
     # and they are the same regimen:
@@ -88,7 +88,7 @@ calculateEras_one <- function(pa, discontinuationTime = 120) {
         ) %>%
         dplyr::mutate(
             regLength = t_end - t_start,
-            timeToNextRegimen = max(lag(t_start, 1) - t_end, 0),
+            timeToNextRegimen = pmax(0, dplyr::lead(t_start, default = 0) - t_start),
             First_Line = 1 * (row_number() == 1),
             Second_Line = 1 * (row_number() == 2),
             Other = 1 * (row_number() > 2)
