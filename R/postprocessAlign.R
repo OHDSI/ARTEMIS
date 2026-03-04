@@ -55,7 +55,6 @@ add_cumultive_times_to_df <- function(df, drugDF) {
 #' #' 2. Remove overlaps between regimens with different number of components
 #' #' 3. Remove overlaps between regimens with the same name, same total alignment length, but different scores
 #' @param df A dataframe created by align() with cumulative times added by add_cumultive_times_to_df()
-#' @export
 #' @return A data.table object without removed overlaps
 #' @importFrom data.table :=
 #' @importFrom data.table .I
@@ -158,7 +157,6 @@ removeOverlaps <- function(df) {
 #' Regimens are only merged if they are identical and occur consecutively in time.
 #' @param output An output dataframe created by align()
 #' @param regimenCombine Allowed days between same regimen before being combined
-#' @export
 #' 
 combineOverlaps <- function(df, regimenCombine) {
     # Create id for consecutive regimens and remove if distance is larger than regimenCombine
@@ -195,9 +193,8 @@ combineOverlaps <- function(df, regimenCombine) {
 #' @param output An output dataframe created by align()
 #' @param regimenCombine Allowed number of days between two instances of the same regimen before
 #' @return df - A data.frame object
-#' @export
 #' 
-postprocessDF <- function(output, regimenCombine = 28) {
+postprocessSinglePatientDF <- function(output, regimenCombine = 28) {
     # Remove rows with NA score and low scoring or one drug alignments  
     df <- output %>% 
         dplyr::filter(totAlign > 1 & adjustedS > 0.501)
@@ -228,4 +225,83 @@ postprocessDF <- function(output, regimenCombine = 28) {
     df[nrow(df),]$timeToEOD <- endOfData - df[nrow(df),]$t_end
 
   return(df)                
+}
+
+
+#' Post-process alignment output
+#' 
+#' Perform post-processing on a data frame of raw alignment results. Three main steps are performed:
+#' 1. Remove overlaps between regimens
+#' 2. Combine regimens
+#' 3. Calculate additional time-based metrics and line of treatment. 
+#' @param ra Raw alignments. An output dataframe produced by generateRawAlignments()
+#' @param regimenCombine The numeric value of days allowed between regimens of the same
+#' name before they are collapsed/summarised into a single regimen
+#' @param regimens The set of input regimens used to generate alignments, from which cycle lengths may be derived
+#' @return A dataframe processed alignments
+#' @export
+processAlignments <- function(ra,
+                              regimenCombine,
+                              regimens = "none") {
+
+    if (nrow(ra) == 0) {
+        cli::cat_bullet(
+            paste("No alignments detected", sep = ""),
+            bullet_col = "yellow",
+            bullet = "info"
+        )
+        return(data.frame()) 
+    }
+
+    IDs_All <- unique(ra$personID)    
+    cli::cat_bullet(
+        paste(
+            "Performing post-processing of ", length(IDs_All),
+            " patients.\n Total alignments: ", dim(ra)[1],
+            sep = ""
+        ),
+        bullet_col = "yellow",
+        bullet = "info"
+    )
+    
+    # Postprocess each patient individually
+    pa <- data.frame()
+
+    for (i in c(1:length(IDs_All))) {
+        ra_s <- ra %>%
+            filter(personID == IDs_All[i])
+        
+        pa_s <- postprocessSinglePatientDF(ra_s, regimenCombine = regimenCombine)
+
+        pa <- dplyr::bind_rows(pa, pa_s)   
+        progress(x = i, max = length(IDs_All))
+    }
+        
+    if (!is(regimens, "data.frame")) {
+        cli::cat_bullet(
+            paste("Adding regimen cycle length data...", sep = ""),
+            bullet_col = "yellow",
+            bullet = "info"
+        )
+        
+        regTemp <- regimens[, c("regName", "cycleLength")]
+        colnames(regTemp)[1] <- "component"
+        
+        pa <- merge(pa, regTemp, by = "component")
+        pa <- pa[order(pa$cycleLength, decreasing = TRUE), ]
+        pa <- pa[!duplicated(pa[, !colnames(pa) %in% c("cycleLength")]), ]
+    } else {
+        cli::cat_bullet(
+            paste("Regimen cycle length data not detected as input...", sep = ""),
+            bullet_col = "yellow",
+            bullet = "info"
+        )
+    }
+    
+    cli::cat_bullet("Complete!",
+                    bullet_col = "green",
+                    bullet = "tick")
+    
+    return(pa)
+    
 }
