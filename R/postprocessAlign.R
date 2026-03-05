@@ -212,17 +212,38 @@ postprocessSinglePatientDF <- function(output, regimenCombine = 28) {
     df <- removeOverlaps(df)
     df <- combineOverlaps(df, regimenCombine)
 
-    # Calculate time to next regimen, 0 if negative
-    df$timeToNextRegimen <- 0
-    df$timeToEOD <- 0
+    df <- df %>%
+        dplyr::arrange(t_start)
+
+    # Combine overlaps could introduce overlapping regimens again as the time is often very long. 
+    # Here we check if there are any overlaps left and remove the regimen that starts later.
+    # In some cases, this removes better regimens. 
+    toRemove <- c()
+    if (nrow(df) > 1) {
+        for (ic in c(2:nrow(df))) {
+            if (df[ic, ]$t_start < df[ic - 1, ]$t_end) {
+                toRemove <- c(toRemove, ic)
+            }
+        }
+    }
+        
+    if (length(toRemove) > 0) {
+        df <- df[-toRemove, ]
+    }
+
+    # Calculate time to next regimen (start of the next regimen minus start of current regimen), 0 if negative
+    # Calculate interval between regimens (start of the next regimen minus end of current regimen), 0 if negative
+    # Calculate regimen length
 
     df <- df %>%
         dplyr::arrange(t_start) %>%
         dplyr::mutate(timeToNextRegimen = pmax(0, dplyr::lead(t_start, default = 0) - t_start)) %>%
+        dplyr::mutate(interval = pmax(0, dplyr::lead(t_start, default = 0) - t_end)) %>%
         dplyr::mutate(regLength = (t_end - t_start) + 1)    
     
-    endOfData <- max(drugDF$t_start)
-    df[nrow(df),]$timeToEOD <- endOfData - df[nrow(df),]$t_end
+    # The last interval is the time between the end of the last regimen and the end of the drug record, 
+    final_time <- max(drugDF$t_start)
+    df[nrow(df),]$interval <- final_time - df[nrow(df),]$t_end
 
   return(df)                
 }
