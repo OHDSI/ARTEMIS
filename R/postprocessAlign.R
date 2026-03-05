@@ -276,27 +276,6 @@ processAlignments <- function(ra,
         pa <- dplyr::bind_rows(pa, pa_s)   
         progress(x = i, max = length(IDs_All))
     }
-        
-    if (!is(regimens, "data.frame")) {
-        cli::cat_bullet(
-            paste("Adding regimen cycle length data...", sep = ""),
-            bullet_col = "yellow",
-            bullet = "info"
-        )
-        
-        regTemp <- regimens[, c("regName", "cycleLength")]
-        colnames(regTemp)[1] <- "component"
-        
-        pa <- merge(pa, regTemp, by = "component")
-        pa <- pa[order(pa$cycleLength, decreasing = TRUE), ]
-        pa <- pa[!duplicated(pa[, !colnames(pa) %in% c("cycleLength")]), ]
-    } else {
-        cli::cat_bullet(
-            paste("Regimen cycle length data not detected as input...", sep = ""),
-            bullet_col = "yellow",
-            bullet = "info"
-        )
-    }
     
     cli::cat_bullet("Complete!",
                     bullet_col = "green",
