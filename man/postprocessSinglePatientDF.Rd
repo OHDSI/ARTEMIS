@@ -4,7 +4,11 @@
 \alias{postprocessSinglePatientDF}
 \title{Postprocess alignment output}
 \usage{
-postprocessSinglePatientDF(output, regimenCombine = 28)
+postprocessSinglePatientDF(
+  output,
+  regimenCombine = 28,
+  discontinuationTime = regimenCombine
+)
 }
 \arguments{
 \item{output}{An output dataframe created by align()}
