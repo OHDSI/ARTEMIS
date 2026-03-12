@@ -25,14 +25,11 @@ test_that("Simple alignment completes without error", {
     )
 
   # Process alignment
-  processedAll <- output_all %>%
+  pa <- output_all %>%
     processAlignments(
       regimens = regimens,
       regimenCombine = 28
     )
-
-  pa <- processedAll %>%
-    calculateEras()
 
   # Expectation: alignment correctly maps back to the original regimen
   expect_true(
