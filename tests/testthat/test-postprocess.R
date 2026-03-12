@@ -1,5 +1,4 @@
 
-            timeToEOD = c(300, 200, 100),
 test_that("processAlignments", {
 
     
