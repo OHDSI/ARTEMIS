@@ -44,7 +44,7 @@ plotAlignment <- function(pa, known_drugs = NULL) {
 
   # check if t_start and t_end columns exist
   if (!all(c("t_start","t_end") %in% names(pa))) {
-    drugRec <- encode(pa$DrugRecord_full[1])
+    drugRec <- encode(pa$CompleteDrugRecord[1])
     drugDF <- createDrugDF(drugRec)
     pa <- add_cumultive_times_to_df(pa, drugDF)
     pa$component <- pa$regName  
@@ -53,7 +53,7 @@ plotAlignment <- function(pa, known_drugs = NULL) {
   # Create dataframe for drugs. 
   # Use patient drug record to create cumulative times
   df <- pa %>%
-      select(person_id = personID, seq = DrugRecord_full) %>% 
+      select(person_id = personID, seq = CompleteDrugRecord) %>% 
       distinct() %>% 
       separate_rows(seq, sep = ";") %>%
       filter(seq != "") %>%

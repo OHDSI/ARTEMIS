@@ -221,10 +221,10 @@ def align_patients_regimens(
                     method=method,
                 )
 
-                df["regName"] = row2[col_name_regName]
-                df["Regimen_full"] = row2[col_name_regimens]
-                df["personID"] = row1[col_name_patient_id]
-                df["DrugRecord_full"] = row1[col_name_patient_record]
+                df.loc[:, "regName"] = row2[col_name_regName]
+                df.loc[:, "Regimen_full"] = row2[col_name_regimens]
+                df.loc[:, "personID"] = row1[col_name_patient_id]
+                df.loc[:, "CompleteDrugRecord"] = row1[col_name_patient_record]
                 dfs.append(df)
     if not dfs:
         return pd.DataFrame()  # Return empty DataFrame if no alignments found
