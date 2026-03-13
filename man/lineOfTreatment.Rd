@@ -2,7 +2,7 @@
 % Please edit documentation in R/postprocessAlign.R
 \name{lineOfTreatment}
 \alias{lineOfTreatment}
-\title{Adds line of treatment era data to a processed regimen alignment ouput}
+\title{Adds line of treatment to a processed regimen alignment ouput}
 \usage{
 lineOfTreatment(pa, drugDF, discontinuationTime = 120)
 }
@@ -17,5 +17,5 @@ lineOfTreatment(pa, drugDF, discontinuationTime = 120)
 A processed alignment dataframe with added era data relating to first/second/other sequencing
 }
 \description{
-Adds line of treatment era data to a processed regimen alignment ouput
+Adds line of treatment to a processed regimen alignment ouput
 }

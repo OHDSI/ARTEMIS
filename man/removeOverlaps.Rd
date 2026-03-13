@@ -13,8 +13,7 @@ removeOverlaps(df)
 A data.table object without removed overlaps
 }
 \description{
-Three overlap removal steps are performed:
+Two overlap removal steps are performed:
 #' 1. Remove overlaps between regimens with different names  
 #' 2. Remove overlaps between regimens with different number of components
-#' 3. Remove overlaps between regimens with the same name, same total alignment length, but different scores
 }
