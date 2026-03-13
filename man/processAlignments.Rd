@@ -4,13 +4,20 @@
 \alias{processAlignments}
 \title{Post-process alignment output}
 \usage{
-processAlignments(ra, regimenCombine, regimens = "none")
+processAlignments(
+  ra,
+  regimenCombine,
+  discontinuationTime = regimenCombine,
+  regimens = "none"
+)
 }
 \arguments{
 \item{ra}{Raw alignments. An output dataframe produced by generateRawAlignments()}
 
 \item{regimenCombine}{The numeric value of days allowed between regimens of the same
 name before they are collapsed/summarised into a single regimen}
+
+\item{discontinuationTime}{The number of days to use to indicate treatment discontinuation treshold for line of treatment annotation. Default is the same as regimenCombine, but can be set higher to allow for longer gaps between lines of treatment.}
 
 \item{regimens}{The set of input regimens used to generate alignments, from which cycle lengths may be derived}
 }

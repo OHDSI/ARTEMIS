@@ -14,6 +14,8 @@ postprocessSinglePatientDF(
 \item{output}{An output dataframe created by align()}
 
 \item{regimenCombine}{Allowed number of days between two instances of the same regimen before}
+
+\item{discontinuationTime}{The number of days to use to indicate treatment discontinuation treshold for line of treatment annotation}
 }
 \value{
 df - A data.frame object

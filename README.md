@@ -166,8 +166,8 @@ tested against all patients within a given cohort.
     regimens <- loadRegimens(condition = "all")
     regGroups <- loadGroups()
 
-    #Manual
-    #regimens <- read.csv("/path/to/my/regimens.csv")
+    # Manual
+    # regimens <- read.csv("/path/to/my/regimens.csv")
 
 A set of valid drugs may also be read in using the provided data, or may
 be curated and submitted by the user. Only valid drugs will appear in
@@ -178,8 +178,8 @@ list.
 
     validDrugs <- loadDrugs()
 
-    #Manual
-    #validDrugs <- read.csv(here::here("data/myDrugs.csv"))
+    # Manual
+    # validDrugs <- read.csv(here::here("data/myDrugs.csv"))
 
 ### Pipeline
 
@@ -201,7 +201,7 @@ The TSW algorithm is then run using user input settings and the provided
 regimen and patient data. Detailed information on user inputs, such as
 the gap penalty, g, can be found [here](www.github.com/OHDIS/ARTEMIS).
 
-    output_all <- stringDF %>% 
+    ra <- stringDF %>% 
         generateRawAlignments(
             regimens = regimens,
             g = 0.4,
@@ -211,20 +211,10 @@ the gap penalty, g, can be found [here](www.github.com/OHDIS/ARTEMIS).
             method = "PropDiff"
         )
 
-Raw output alignments are then post-processed.
-Post-processing steps include the handling of
-overlapping regimen alignments, as well as formatting output for
-submission to an episode era table.
+Raw alignments are subsequently post-processed. These steps include resolving overlapping regimen alignments and formatting the output for line-of-treatment assignment.
 
-    processedAll <- output_all %>% 
+    pa <- ra %>% 
             processAlignments(regimenCombine = 28, regimens = regimens)
-
-Treatment trajectories, or regimen eras, can then be calculated, adding
-further information about the relative sequencing order of different
-regimens and regimen types.
-
-    pa <- processedAll %>% 
-            calculateEras(discontinuationTime = 90)
 
 
 Individual patient regimens can be visualized using `plotAlignment`.

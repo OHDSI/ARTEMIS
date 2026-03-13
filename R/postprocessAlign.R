@@ -238,6 +238,7 @@ lineOfTreatment <- function(pa, drugDF, discontinuationTime = 120) {
 #'
 #' @param output An output dataframe created by align()
 #' @param regimenCombine Allowed number of days between two instances of the same regimen before
+#' @param discontinuationTime The number of days to use to indicate treatment discontinuation treshold for line of treatment annotation
 #' @return df - A data.frame object
 #' 
 postprocessSinglePatientDF <- function(output, regimenCombine = 28, discontinuationTime = regimenCombine) {
@@ -292,11 +293,13 @@ postprocessSinglePatientDF <- function(output, regimenCombine = 28, discontinuat
 #' @param ra Raw alignments. An output dataframe produced by generateRawAlignments()
 #' @param regimenCombine The numeric value of days allowed between regimens of the same
 #' name before they are collapsed/summarised into a single regimen
+#' @param discontinuationTime The number of days to use to indicate treatment discontinuation treshold for line of treatment annotation. Default is the same as regimenCombine, but can be set higher to allow for longer gaps between lines of treatment.
 #' @param regimens The set of input regimens used to generate alignments, from which cycle lengths may be derived
 #' @return A dataframe processed alignments
 #' @export
 processAlignments <- function(ra,
                               regimenCombine,
+                              discontinuationTime = regimenCombine,
                               regimens = "none") {
 
     if (nrow(ra) == 0) {
@@ -326,7 +329,9 @@ processAlignments <- function(ra,
         ra_s <- ra %>%
             filter(personID == IDs_All[i])
         
-        pa_s <- postprocessSinglePatientDF(ra_s, regimenCombine = regimenCombine)
+        pa_s <- postprocessSinglePatientDF(ra_s, 
+                                           regimenCombine = regimenCombine, 
+                                           discontinuationTime = discontinuationTime)
 
         pa <- dplyr::bind_rows(pa, pa_s)   
         progress(x = i, max = length(IDs_All))
