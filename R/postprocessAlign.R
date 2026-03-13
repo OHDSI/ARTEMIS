@@ -215,7 +215,7 @@ lineOfTreatment <- function(pa, drugDF, discontinuationTime = 120) {
             adjustedS = sum(adjustedS * max(t_end - t_start, 1) / max(sum(t_end - t_start), 1)), # avoid division by zero
             t_start = min(t_start),
             t_end = max(t_end),
-            interval = min(interval[interval > 0], default = 0),
+            interval = min(interval),
             .by = c(component, lines, personID, CompleteDrugRecord)
         ) %>%
         mutate(
