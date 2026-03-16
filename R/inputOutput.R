@@ -159,15 +159,17 @@ loadDrugs <- function(absolute = NULL) {
 #' @export
 loadRegimens <- function(condition = "all", absolute = NULL, 
                          mapping = list("lungCancer" = c("Thoraic Oncology", "Thoraic Oncology"),
-                                        "multipleMyeloma" = c("Multiple Myeloma"))) {
-  
+                                        "multipleMyeloma" = c("Multiple Myeloma")),
+                        concept_file = NULL,
+                        ignore_default_list = FALSE) {
+  regimens_env <- new.env()
+  assign("regimens_env", regimens_env, envir = .GlobalEnv)
+
   # Load from absolute path if provided
   if (!is.null(absolute)) {
     if (!file.exists(absolute)) {
       stop(paste("Error: The specified file", absolute, "was not found."))
     }
-    
-    regimens_env <- new.env()
     load(absolute, envir = regimens_env)
     
     # Ensure `regimens` exists after loading
@@ -178,12 +180,15 @@ loadRegimens <- function(condition = "all", absolute = NULL,
     regimens <- regimens_env$regimens
   } else {
     # Load from ARTEMIS package if no absolute path is given
-    data("regimens", package = "ARTEMIS")
+    data("regimens", package = "ARTEMIS", envir = regimens_env)
     
     if (!exists("regimens")) {
       stop("Error: Failed to load 'regimens' from ARTEMIS package.")
     }
   }
+  
+  cleanByBlacklist(concept_file, ignore_default_list)
+  regimens <- regimens_env$regimens # since filtered stored in env. 
   
   # Handle mapping fallback: if condition is missing, use condition itself
   mapped_conditions <- mapping[[condition]]

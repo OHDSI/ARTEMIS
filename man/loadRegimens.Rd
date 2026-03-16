@@ -8,7 +8,9 @@ loadRegimens(
   condition = "all",
   absolute = NULL,
   mapping = list(lungCancer = c("Thoraic Oncology", "Thoraic Oncology"), multipleMyeloma
-    = c("Multiple Myeloma"))
+    = c("Multiple Myeloma")),
+  concept_file = NULL,
+  ignore_default_list = FALSE
 )
 }
 \arguments{
