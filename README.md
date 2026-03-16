@@ -105,7 +105,7 @@ the gap penalty `g`, can be found [here](www.github.com/OHDIS/ARTEMIS).
 Raw alignments are subsequently post-processed. These steps include resolving overlapping regimen alignments and formatting the output for line-of-treatment assignment.
 
     pa <- ra %>% 
-            processAlignments(regimenCombine = 28, regimens = regimens)
+            processAlignments(regimenCombine = 28)
 
 
 Individual patient regimens can be visualized using `plotAlignment`.

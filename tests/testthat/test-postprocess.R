@@ -7,7 +7,7 @@ test_that("processAlignments", {
                   )
 
 
-    output_all <- generateRawAlignments(
+    ra <- generateRawAlignments(
         s,
         regimens = regimens,
         g = 0.4,
@@ -17,10 +17,7 @@ test_that("processAlignments", {
         method = "PropDiff"
     )
 
-
-    pa <- processAlignments(output_all,
-                            regimenCombine = 120,
-                            regimens = regimens)
+    pa <- processAlignments(ra,regimenCombine = 120)
 
     res <- data.frame(
             component = c("Carboplatin and Paclitaxel (CP)"),

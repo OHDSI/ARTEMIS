@@ -15,7 +15,7 @@ test_that("Simple alignment completes without error", {
   )
 
   # Generate raw alignment
-  output_all <- df %>%
+  ra <- df %>%
     generateRawAlignments(
       regimens = regimens,
       g = 0.4,
@@ -25,11 +25,8 @@ test_that("Simple alignment completes without error", {
     )
 
   # Process alignment
-  pa <- output_all %>%
-    processAlignments(
-      regimens = regimens,
-      regimenCombine = 28
-    )
+  pa <- ra %>%
+    processAlignments(regimenCombine = 28)
 
   # Expectation: alignment correctly maps back to the original regimen
   expect_true(
