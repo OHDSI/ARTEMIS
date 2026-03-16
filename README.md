@@ -62,9 +62,7 @@ An input JSON file containing a cohort specification is provided by the user. In
     # name <- "customcohort"
 
 
-Regimen data may be loaded in from the provided package, or may be
-submitted directly by the user. All of the provided regimens will be
-tested against all patients within a given cohort.
+Regimen data may be loaded from the package or provided directly by the user. All supplied regimens are evaluated against all patients within a given cohort.
 
     regimens <- loadRegimens(condition = "all")
     regGroups <- loadGroups()
@@ -81,8 +79,7 @@ A set of valid drugs may be loaded from the provided data or curated and submitt
 
 ### Pipeline
 
-The cdm connection is used to generate a dataframe containing the
-relevant patient details for constructing regimen strings.
+The cdm connection is used to generate a dataframe containing the relevant patient details for constructing regimen strings.
 
     con_df <- getConDF(connectionDetails = connectionDetails, 
                        json = json, 
@@ -90,14 +87,34 @@ relevant patient details for constructing regimen strings.
                        cdmSchema = cdmSchema, 
                        writeSchema = writeSchema)
 
-Regimen strings are then constructed, collated and filtered into a
+Patients drug records are then constructed, collated and filtered into a
 stringDF dataframe containing all patients of interest.
 
     stringDF <- stringDF_from_cdm(con_df = con_df, validDrugs = validdrugs)
 
-The TSW algorithm is then run using user input settings and the provided
-regimen and patient data. Detailed information on user inputs, such as
-the gap penalty `g`, can be found [here](www.github.com/OHDIS/ARTEMIS).
+First check if the dates are correctly written 
+
+    con_df$drug_exposure_start_date
+
+If the dates appear as numeric values like this: 
+
+```
+  [1]  393379200  393379200 1422230400 1422230400  739411200 1457568000  848361600  848361600
+  [9]  308966400  308966400  314064000 1293408000 1082073600 1082073600 1082073600  806198400
+```
+they need to be converted to a proper date format for further processing.
+
+    con_df$drug_exposure_start_date <- as.POSIXct(con_df$drug_exposure_start_date,
+                                                  origin = "1970-01-01",
+                                                  tz = "UTC")
+
+Now, we can create our patient drug record dataframe.
+
+    stringDF <- stringDF_from_cdm(con_df = con_df,
+                                  validDrugs = validdrugs)
+
+
+We are ready to align the patient data against the regiments. Detailed information on user inputs, such as the gap penalty `g`, can be found [here](www.github.com/OHDIS/ARTEMIS).
 
     ra <- stringDF %>% 
         generateRawAlignments(regimens = regimens)
