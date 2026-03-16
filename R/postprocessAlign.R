@@ -294,13 +294,12 @@ postprocessSinglePatientDF <- function(output, regimenCombine = 28, discontinuat
 #' @param regimenCombine The numeric value of days allowed between regimens of the same
 #' name before they are collapsed/summarised into a single regimen
 #' @param discontinuationTime The number of days to use to indicate treatment discontinuation treshold for line of treatment annotation. Default is the same as regimenCombine, but can be set higher to allow for longer gaps between lines of treatment.
-#' @param regimens The set of input regimens used to generate alignments, from which cycle lengths may be derived
 #' @return A dataframe processed alignments
 #' @export
 processAlignments <- function(ra,
                               regimenCombine,
-                              discontinuationTime = regimenCombine,
-                              regimens = "none") {
+                              discontinuationTime = regimenCombine
+                             ) {
 
     if (nrow(ra) == 0) {
         cli::cat_bullet(
