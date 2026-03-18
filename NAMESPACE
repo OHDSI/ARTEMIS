@@ -2,6 +2,7 @@
 
 export("%>%")
 export("%m+%")
+export(cleanByBlacklist)
 export(createDrugDF)
 export(decode)
 export(defaultSmatrix)
