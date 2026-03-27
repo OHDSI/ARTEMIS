@@ -1,0 +1,101 @@
+---
+title: "ARTEMIS Installation Guide"
+author: "Strahinja Stevanovic, Svetozar Nesic"
+date: '`r Sys.Date()`'
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{ARTEMIS Installation Guide}
+  %\VignetteEncoding{UTF-8}
+---
+# Introduction
+
+This vignette describes how you need to install the Observational Health Data Science and Informatics (OHDSI) [`ARTEMIS`](https://github.com/OHDSI/ARTEMIS) package under Windows, Mac, and Linux.
+
+# Software Prerequisites
+
+Before installing ARTEMIS, ensure that **Python (version ≥ 3.12)** is installed on your system.  
+You can check which Python version R detects using:
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE,tidy=FALSE,eval=FALSE}
+system("python --version", intern = TRUE)
+```
+
+If you want ARTEMIS to use a specific Python interpreter, set the `ARTEMIS_PYTHON` environment variable before installation:
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE,tidy=FALSE,eval=FALSE}
+Sys.setenv(ARTEMIS_PYTHON = "/path/to/your/python")
+```
+
+ARTEMIS can be installed directly from GitHub:
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE,tidy=FALSE,eval=FALSE}
+# Install devtools if it is not already installed
+if (!requireNamespace("devtools", quietly = TRUE)) {
+  install.packages("devtools")
+}
+
+# Install ARTEMIS from GitHub
+devtools::install_github("OHDSI/ARTEMIS")
+```
+
+If you are unsure how to install `Python` or set `ARTEMIS_PYTHON`, refer to the OS-specific setup instructions below.
+
+### On Windows
+Install Python 3.12 or above from the Microsoft Store or from:
+https://www.python.org/downloads/windows/
+
+Then open cmd or PowerShell and set the environment variable:
+
+    set ARTEMIS_PYTHON=<ABS\\PATH\\TO\\python.exe (v3.12+)>
+
+Other requirements checklist:
+
+* R, Rtools, and devtools installed
+
+* Microsoft Visual C++ 14.0 or greater (required by Python packages like numpy)
+
+* Visual Studio Build Tools (for faster Cython-compiled alignment)
+
+### On Linux or macOS
+
+Install Python 3.12+ using your preferred package manager (e.g., Homebrew, apt, pacman) or download it from: https://www.python.org/
+
+Then from the terminal, set the Python version environment variable:
+
+    export ARTEMIS_PYTHON="/absolute/path/to/python3.12"
+
+Other dependencies you might need installed:
+
+    base-devel, r, git, libgit2, zlib, libxml2, openssl, curl, pkgconf, 
+    pandoc, glpk, gmp, libtool, graphviz, make, cmake, tzdata, 
+    jdk-openjdk, libcurl-compat, gcc-fortran, openblas, lapack
+
+### Reticulate
+
+💡 You do NOT need to manually set up reticulate — ARTEMIS takes care of it automatically during setup. This section is for informational purposes only.
+
+ARTEMIS relies on a python back-end via
+[reticulate](https://rstudio.github.io/reticulate/) and depending on
+your reticulate settings, system and environment, you may need to run
+the following commands before loading the package:
+
+    reticulate::py_install("numpy")
+    reticulate::py_install("pandas")
+
+    **Other python dependencies for the build**
+    reticulate::py_install("setuptools")
+    reticulate::py_install("wheel")
+    reticulate::py_install("Cython")
+    reticulate::py_install("tqdm")
+    
+If you do not presently have reticulate or python3.12 installed you may
+first need to run the following commands to ensure that reticulate can
+access a valid python install on your system:
+
+    install.packages("reticulate")
+    library(reticulate)
+
+This will prompt reticulate to install python, create a local virtualenv
+called “r-reticulate” and, finally, set this virtual environment as the
+local environment for use when running python via R through reticulate.
