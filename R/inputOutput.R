@@ -9,6 +9,7 @@
 getConDF <- function(connectionDetails, json, name, cdmSchema, writeSchema){
 
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+  on.exit(DatabaseConnector::disconnect(connection), add = TRUE)
 
   cohortsToCreate <- CohortGenerator::createEmptyCohortDefinitionSet()
   cohortExpression <- CirceR::cohortExpressionFromJson(json)
