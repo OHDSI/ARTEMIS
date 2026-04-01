@@ -20,3 +20,7 @@ Output_Processed.csv
 ^\.git$
 ^\.venv$
 ^__pycache__$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$

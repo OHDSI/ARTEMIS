@@ -1,4 +1,13 @@
-# Releases
+---
+title: "ARTEMIS Releases"
+author: "Strahinja Stevanovic, Svetozar Nesic"
+date: '`r Sys.Date()`'
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{ARTEMIS Installation Guide}
+  %\VignetteEncoding{UTF-8}
+---
 
 Notice: Due to bundled data requirements, users are encouraged to utilize Git’s built-in versioning features for deployment and package management.
 

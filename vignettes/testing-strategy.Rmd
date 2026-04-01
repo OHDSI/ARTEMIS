@@ -1,4 +1,13 @@
-# Testing Strategy
+---
+title: "ARTEMIS Testing Strategy"
+author: "Strahinja Stevanovic, Svetozar Nesic"
+date: '`r Sys.Date()`'
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{ARTEMIS Installation Guide}
+  %\VignetteEncoding{UTF-8}
+---
 
 This project uses `testthat` and `devtools` to test the installed ARTEMIS package — including its R to Python to Cython bridge logic.
 
