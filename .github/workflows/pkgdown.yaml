@@ -10,18 +10,23 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pages: write      
-  id-token: write   
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
   pkgdown:
-    runs-on: ubuntu-latest
-    concurrency:
-      group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
+    runs-on: ubuntu-22.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-    
+
     steps:
       - uses: actions/checkout@v4
 
@@ -35,6 +40,8 @@ jobs:
         with:
           extra-packages: any::pkgdown, local::.
           needs: website
+          cache: true
+          cache-version: 1
 
       - name: Build site
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE, devel = FALSE)
@@ -44,9 +51,14 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'docs' 
+          path: 'docs'
 
       - name: Deploy to GitHub Pages 🚀
         if: github.event_name != 'pull_request'
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Print site URL 🔗
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "🔗 **[https://ohdsi.github.io/ARTEMIS/](https://ohdsi.github.io/ARTEMIS/)**" >> $GITHUB_STEP_SUMMARY
