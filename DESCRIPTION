@@ -1,7 +1,7 @@
 Package: ARTEMIS
 Type: Package
 Title: Chemotherapy regimen detection via temporal alignment algorithms
-Version: 1.0.0.1
+Version: 1.4.1
 Author: Laurence Lawrence-Archer
 Maintainer: This package is maintained by Laurence Lawrence-Archer <ldyer2006@gmail.com>
 Description: A chemotherapy regimen detection algorithm is implemented alongside methods to generate patient-level data from an OMOP-CDM compliant database.
