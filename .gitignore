@@ -32,3 +32,5 @@ __pycache__
 *.o
 *.c
 .vscode/settings.json
+/docs/
+docs
