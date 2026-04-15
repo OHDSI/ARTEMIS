@@ -6,6 +6,9 @@ template:
     bootswatch: cosmo
   light-switch: true
 
+resources:
+  - vignettes/images
+
 development:
   mode: auto
   development: docs/dev
