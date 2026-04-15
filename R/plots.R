@@ -1,7 +1,9 @@
 #' Plots a full alignment output
 #' 
 #' For each patient separately, plot drug exposures and aligned regimens over time
-#' @param pa A patient alignment dataframe created by processAlignments() or calculateEras
+#' @param pa A patient alignment dataframe created by processAlignments() or generateRawAlignments()
+#' @param known_drugs A vector of drug names to highlight the missing in the plot. Default is NULL
+#' @param collapse_regimens A boolean indicating whether to collapse regimens into a single row
 #' @return plot - A list of ggplot objects
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_segment geom_text geom_point facet_grid
@@ -11,153 +13,169 @@
 #' @importFrom forcats fct_reorder
 #' @importFrom tidyr separate_rows separate 
 #' @importFrom RColorBrewer brewer.pal
-plotAlignment <- function(pa, known_drugs = NULL) {
-  # Add patient_name if it does not exists
-  # It is used to facet plots so we can compare multiple patients
-  if(!"patient_name" %in% names(pa)) {
-      pa$patient_name = pa$personID
-  }
-
-  # In case there are multiple patients in the dataframe
-  # run this function for each patient separately
-  patients = unique(pa$patient_name)
-
-  if (length(patients) > 1) {
-    cli::cat_bullet(
+plotAlignment <- function(pa, known_drugs = NULL, collapse_regimens = TRUE) {
+    if (nrow(pa) == 0) {
+       cli::cat_bullet(
+            paste("No patients detected!", sep = ""),
+            bullet_col = "red",
+            bullet = "info"
+        )
+        return(NULL)
+    }
+    # Add patient_name if it does not exists
+    # It is used to facet plots so we can compare multiple patients
+    if(!"patient_name" %in% names(pa)) {
+        pa$patient_name = pa$personID
+    }
+    
+    # In case there are multiple patients in the dataframe
+    # run this function for each patient separately
+    patients = unique(pa$patient_name)
+    
+    if (length(patients) > 1) {
+        cli::cat_bullet(
             paste("Multiple patients detected", sep = ""),
             bullet_col = "yellow",
             bullet = "info"
         )
-    p_plots = list()    
-    for (p in patients) {
-      p_pa <- pa %>%
-          filter(patient_name == p)
-      p_plot <- plotAlignment(p_pa, known_drugs = known_drugs)
-      p_plots[[as.character(p)]] = p_plot
+        p_plots = list()    
+        for (p in patients) {
+            p_pa <- pa %>%
+                filter(patient_name == p)
+            p_plot <- plotAlignment(pa = p_pa, 
+                                    known_drugs = known_drugs, 
+                                    collapse_regimens = collapse_regimens)
+            p_plots[[as.character(p)]] = p_plot
+        }
+        return(p_plots)
     }
-    return(p_plots)
-  }
+    
+    # Plot now for a single patient
+    pa = pa %>%
+        filter(patient_name == patients[1])
+    
+    # check if t_start and t_end columns exist
+    if (!all(c("t_start","t_end") %in% names(pa))) {
+        drugRec <- encode(pa$CompleteDrugRecord[1])
+        drugDF <- createDrugDF(drugRec)
+        pa <- add_cumultive_times_to_df(pa, drugDF)
+        pa$component <- pa$regName  
+    }
+    
+    # Create dataframe for drugs. 
+    # Use patient drug record to create cumulative times
+    df <- pa %>%
+        select(person_id = personID, seq = CompleteDrugRecord) %>% 
+        distinct() %>% 
+        separate_rows(seq, sep = ";") %>%
+        filter(seq != "") %>%
+        separate(seq, into = c("time", 'component')) %>%
+        group_by(person_id) %>%
+        mutate(
+            t_start = cumsum(as.integer(time)),
+            t_end = t_start,
+            case = "drugs",
+            person_id = as.character(person_id)
+        ) %>%
+        arrange(time)
+    
+    # Create dataframe for regimens
+    df <- pa %>%
+        select(
+            person_id = personID,
+            patient_name,
+            component,
+            t_start,
+            t_end,
+            adjustedS
+        ) %>%
+        mutate(t_end = ifelse(t_start == t_end, t_end + 1, t_end)) %>% 
+        mutate(case = "regimen", 
+               adjustedS = round(adjustedS, 2)) %>%
+        bind_rows(df) %>%
+        mutate(component = fct_reorder(component, t_start))
+    
+    # create y axis values, either collapsed or not
+    if (collapse_regimens) {
+        df$y = ifelse(df$case == "regimen", "regimen", as.character(df$component))
+    } else {
+        df$y = df$component
+    }
 
-  # Plot now for a single patient
-  pa = pa %>%
-      filter(patient_name == patients[1])
+    # Get unique components for drugs and regimens
+    patient_components <- unique(df$component[df$case == "drugs"])
+    regimen_components <- unique(df$component[df$case == "regimen"])
+    
+    patient_components = as.character(patient_components)
+    regimen_components = as.character(regimen_components)
+    # Generate dynamic color palettes
+    if(length(patient_components) < 10) {
+        patient_colors <- setNames(brewer.pal(length(patient_components), "Set1"), patient_components)
+    } else {
+        patient_colors <- setNames(viridis(length(patient_components), option = "D"), patient_components)
+    }
+    regimen_colors <- setNames(brewer.pal(length(regimen_components), "Paired"), regimen_components)
+    # Combine color mappings for manual scale
+    colors <- c(patient_colors, regimen_colors)
 
-  # check if t_start and t_end columns exist
-  if (!all(c("t_start","t_end") %in% names(pa))) {
-    drugRec <- encode(pa$DrugRecord_full[1])
-    drugDF <- createDrugDF(drugRec)
-    pa <- add_cumultive_times_to_df(pa, drugDF)
-    pa$component <- pa$regName  
-  }
+    # Compute midpoints for text
+    df$mid_x <- (df$t_start + df$t_end) / 2
+    
+    # avoid NA in text
+    df_regimens = df %>% 
+        filter(case == "regimen")
 
-  # Create dataframe for drugs. 
-  # Use patient drug record to create cumulative times
-  df <- pa %>%
-      select(person_id = personID, seq = DrugRecord_full) %>% 
-      distinct() %>% 
-      separate_rows(seq, sep = ";") %>%
-      filter(seq != "") %>%
-      separate(seq, into = c("time", 'component')) %>%
-      group_by(person_id) %>%
-      mutate(
-          t_start = cumsum(as.integer(time)),
-          t_end = t_start,
-          case = "drugs",
-          person_id = as.character(person_id)
-      ) %>%
-      arrange(time)
-
-  # Create dataframe for regimens
-  df <- pa %>%
-      select(
-          person_id = personID,
-          patient_name,
-          component,
-          t_start,
-          t_end,
-          adjustedS
-      ) %>%
-      mutate(t_end = ifelse(t_start == t_end, t_end + 1, t_end)) %>% 
-      mutate(case = "regimen", 
-            adjustedS = round(adjustedS, 2)) %>%
-      bind_rows(df) %>%
-      mutate(component = fct_reorder(component, t_start))
-
-  # Get unique components for drugs and regimens
-  patient_components <- unique(df$component[df$case == "drugs"])
-  regimen_components <- unique(df$component[df$case == "regimen"])
-
-  patient_components = as.character(patient_components)
-  regimen_components = as.character(regimen_components)
-  # Generate dynamic color palettes
-  if(length(patient_components) < 10) {
-      patient_colors <- setNames(brewer.pal(length(patient_components), "Set1"), patient_components)
-  } else {
-      patient_colors <- setNames(viridis(length(patient_components), option = "D"), patient_components)
-  }
-  regimen_colors <- setNames(brewer.pal(length(regimen_components), "Paired"), regimen_components)
-  # Combine color mappings
-  colors <- c(patient_colors, regimen_colors)
-  # Create separate aesthetics for drugs and regimens
-  df$patient_components_col <- ifelse(df$case == "drugs", as.character(df$component), NA)
-  df$regimen_components_col <- ifelse(df$case == "regimen", as.character(df$component), NA)
-
-  # Compute midpoints
-  df$mid_x <- (df$t_start + df$t_end) / 2
-
-  p <- df %>%
-      ggplot() +
-      geom_segment(
-          aes(
-              x = t_start,
-              xend = t_end,
-              y = component,
-              yend = component,
-              color = patient_components_col
-          ),
-          linewidth = 2,
-          na.rm = TRUE
-      ) +
-      geom_segment(
-          aes(
-              x = t_start,
-              xend = t_end,
-              y = component,
-              yend = component,
-              color = regimen_components_col
-          ),
-          linewidth = 2,
-          na.rm = TRUE
-      ) +
-      geom_text(aes(x = mid_x, y = component, label = adjustedS), vjust = -0.5, size = 3) +
-      geom_point(aes(x = t_start, y = component, color = patient_components_col)) +
-      facet_grid(
-          cols = vars(person_id),
-          rows = vars(case),
-          scale = "free_y"
-      ) +
-      scale_color_manual(
-          name = "patient",
-          values = colors,
-          na.translate = FALSE,
-          guide = guide_legend(order = 1)
-      ) +
-      scale_color_manual(
-          name = "regimen",
-          values = colors,
-          na.translate = FALSE
-      ) +
-      guides(color = guide_legend(order = 3, override.aes = list(size = 3))) +
-      labs(x = "Time", y = "Component", title = "Time Intervals per Component") +
-      theme_bw() +
-      theme(legend.position = "none",
-            axis.text.y = element_markdown()) + # Move legends below
-      ggtitle(label = paste("Patient", unique(df$patient_name))) +
-      scale_y_discrete(labels = function(x) {
-          ifelse(!x %in% known_drugs & !x %in% df$component, 
-                paste0("**", x, "**"), x)
-      })
-
+    p <- df %>%
+        ggplot() +
+        geom_point(aes(x = t_start, y = y, color = component), show.legend = FALSE) +
+        geom_point(aes(x = t_end, y = y, color = component), show.legend = FALSE) +
+        geom_segment(
+            mapping = aes(
+                x = t_start,
+                xend = t_end,
+                y = y,
+                yend = y,
+                color = component
+            ),
+            linewidth = 2,
+            na.rm = TRUE
+        ) +
+        geom_text(
+            data = df_regimens,
+            mapping = aes(x = mid_x, y = y, label = adjustedS),
+            vjust = -0.5,
+            size = 3
+        ) +
+        scale_color_manual(
+            name = "regimen",
+            values = colors,
+            na.translate = FALSE,
+            breaks = names(regimen_colors)
+            
+        ) +
+        facet_grid(
+            cols = vars(person_id),
+            rows = vars(case),
+            scale = "free_y",
+            space = "free_y"
+        ) +
+        guides(color = guide_legend(ncol = 3, override.aes = list(size = 1))) +
+        labs(x = "Time", y = "Component", title = "Time Intervals per Component") +
+        theme_bw() +
+        theme(
+            legend.position = "bottom",
+            panel.spacing = unit(0, "lines"),
+            axis.text.y = element_markdown()
+        ) +
+        ggtitle(label = paste("Patient", patients)) +
+        # bold drugs that do not exist in known drugs
+        scale_y_discrete(
+            labels = function(x) {
+                ifelse(!x %in% known_drugs & !x %in% df$component,
+                       paste0("**", x, "**"),
+                       x)
+            }
+        )
     return(p)
 }
 

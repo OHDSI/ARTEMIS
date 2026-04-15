@@ -33,3 +33,5 @@ __pycache__
 *.c
 .vscode/settings.json
 tests/testthat/_snaps*
+/docs/
+docs

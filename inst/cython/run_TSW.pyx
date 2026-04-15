@@ -239,10 +239,10 @@ def align_patients_regimens_fast(
                     method=method,
                 )
 
-                df["regName"] = regimen_names[j]
-                df["Regimen_full"] = regimen_seq
-                df["personID"] = patient_ids[i]
-                df["DrugRecord_full"] = patient_seq
+                df.loc[:, "regName"] = regimen_names[j]
+                df.loc[:, "Regimen_full"] = regimen_seq
+                df.loc[:, "personID"] = patient_ids[i]
+                df.loc[:, "CompleteDrugRecord"] = patient_seq
 
                 dfs.append(df)
 

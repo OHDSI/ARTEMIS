@@ -56,7 +56,7 @@ stringDF
 
 
 ## Alignment
-output_all <- stringDF %>%
+ra <- stringDF %>%
     generateRawAlignments(
         regimens = regimens,
         g = 0.4,
@@ -65,14 +65,9 @@ output_all <- stringDF %>%
         verbose = 0
     )
 
-
 ## Post-process Alignment
-processedAll <- output_all %>%
-    processAlignments(regimens = regimens, 
-                      regimenCombine = 28)
-
-pa <- processedAll %>% 
-    calculateEras()
+pa <- ra %>%
+    processAlignments(regimenCombine = 28)
 
 ## Data analysis
 ## Plot alignments for every patient 

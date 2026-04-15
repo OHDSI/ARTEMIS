@@ -1,0 +1,70 @@
+name: build-rstudio-image-amd64
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOCKERHUB_REPO: ${{ vars.DOCKERHUB_REPO || 'artemis-rstudio' }}
+
+jobs:
+  build-push-amd64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve config
+        id: cfg
+        env:
+          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+          DOCKERHUB_PAT: ${{ secrets.DOCKERHUB_PAT }}
+        run: |
+          if [ -z "${DOCKERHUB_USER}" ] || [ -z "${DOCKERHUB_PAT}" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Docker Hub credentials are not set; skipping."
+            exit 0
+          fi
+
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+          IMAGE="${DOCKERHUB_USER}/${DOCKERHUB_REPO}"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+
+          DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
+          TAGS=("sha-${GITHUB_SHA}")
+          if [ "${GITHUB_REF_TYPE}" = "branch" ]; then
+            BRANCH_TAG="$(echo "${GITHUB_REF_NAME}" | tr '[:upper:]' '[:lower:]' | sed 's#[^a-z0-9._-]#-#g; s/--*/-/g; s/^-//; s/-$//')"
+            if [ -n "${BRANCH_TAG}" ]; then
+              TAGS+=("${BRANCH_TAG}")
+            fi
+          fi
+          if [ "${GITHUB_REF_NAME}" = "${DEFAULT_BRANCH}" ]; then
+            TAGS+=("latest")
+          fi
+
+          printf "tags=%s\n" "$(printf '%s\n' "${TAGS[@]}" | paste -sd, -)" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to Docker Hub
+        if: ${{ steps.cfg.outputs.enabled == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PAT }}
+
+      - name: Build and push amd64 image tags
+        if: ${{ steps.cfg.outputs.enabled == 'true' }}
+        env:
+          IMAGE: ${{ steps.cfg.outputs.image }}
+          TAGS: ${{ steps.cfg.outputs.tags }}
+        run: |
+          IFS=',' read -ra TAG_ARRAY <<< "${TAGS}"
+          for TAG in "${TAG_ARRAY[@]}"; do
+            ARCH_TAG="${IMAGE}:${TAG}-amd64"
+            docker build \
+              --file ./docker/Dockerfile \
+              --tag "${ARCH_TAG}" \
+              .
+            docker push "${ARCH_TAG}"
+          done

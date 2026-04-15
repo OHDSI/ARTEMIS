@@ -1,6 +1,6 @@
 <p float="left">
 
-<img src="./img/artemis.png" style="vertical-align: center;" width="100"/>
+<img src="./vignettes/images/artemis.png" style="vertical-align: center;" width="100"/>
 
 </p>
 
@@ -11,12 +11,12 @@ Although applicable to various contexts, ARTEMIS is primarily intended for cance
 
 
 <figure>
-<img src="./img/Workflow_Detailed.png?" alt="ARTEMIS Workflow" />
+<img src="./vignettes/images/Workflow_Detailed.png?" alt="ARTEMIS Workflow" />
 <figcaption aria-hidden="true">ARTEMIS Workflow</figcaption>
 </figure>
 
 ### Quick to Docs:
-* See [release notes](docs/branch-versioning.md) for versioning and contribution.
+* See [release notes](vignettes/branch-versioning.md) for versioning and contribution.
 
 ## Installation
 
@@ -45,146 +45,41 @@ if (!requireNamespace("devtools", quietly = TRUE)) {
 devtools::install_github("OHDSI/ARTEMIS")
 ```
 
-If you are unsure how to install `Python` or set `ARTEMIS_PYTHON`, refer to the OS-specific setup instructions below.
+## Usage
 
-### On Windows
-Install Python 3.12 or above from the Microsoft Store or from:
-https://www.python.org/downloads/windows/
-
-Then open cmd or PowerShell and set the environment variable:
-
-    set ARTEMIS_PYTHON=<ABS\\PATH\\TO\\python.exe (v3.12+)>
-
-Other requirements checklist:
-
-* R, Rtools, and devtools installed
-
-* Microsoft Visual C++ 14.0 or greater (required by Python packages like numpy)
-
-* Visual Studio Build Tools (for faster Cython-compiled alignment)
-
-### On Linux or macOS
-
-Install Python 3.12+ using your preferred package manager (e.g., Homebrew, apt, pacman) or download it from: https://www.python.org/
-
-Then from the terminal, set the Python version environment variable:
-
-    export ARTEMIS_PYTHON="/absolute/path/to/python3.12"
-
-Other dependencies you might need installed:
-
-    base-devel, r, git, libgit2, zlib, libxml2, openssl, curl, pkgconf, 
-    pandoc, glpk, gmp, libtool, graphviz, make, cmake, tzdata, 
-    jdk-openjdk, libcurl-compat, gcc-fortran, openblas, lapack
-
-### Reticulate
-
-💡 You do NOT need to manually set up reticulate — ARTEMIS takes care of it automatically during setup. This section is for informational purposes only.
-
-ARTEMIS relies on a python back-end via
-[reticulate](https://rstudio.github.io/reticulate/) and depending on
-your reticulate settings, system and environment, you may need to run
-the following commands before loading the package:
-
-    reticulate::py_install("numpy")
-    reticulate::py_install("pandas")
-
-    **Other python dependencies for the build**
-    reticulate::py_install("setuptools")
-    reticulate::py_install("wheel")
-    reticulate::py_install("Cython")
-    reticulate::py_install("tqdm")
-    
-If you do not presently have reticulate or python3.12 installed you may
-first need to run the following commands to ensure that reticulate can
-access a valid python install on your system:
-
-    install.packages("reticulate")
-    library(reticulate)
-
-This will prompt reticulate to install python, create a local virtualenv
-called “r-reticulate” and, finally, set this virtual environment as the
-local environment for use when running python via R through reticulate.
-
-## Usage - User Script
-
-A user script is included in this repository,`userScript.R`, to demonstrate how ARTEMIS works. It uses a dummy database to create patients and align them with treatment regimens.
-
-### DatabaseConnector
-
-ARTEMIS also relies on the package
-[DatabaseConnector](https://github.com/OHDSI/DatabaseConnector) to
-create a connection to your CDM. The process of cohort creation requires
-that you have a valid data-containing schema, and a pre-existing schema
-where you have write access. This write schema will be used to store
-cohort tables during their generation, and may be safely deleted after
-running the package.
-
-The specific drivers required by dbConnect may change depending on your
-system. More detailed information can be found in the section “DBI
-Drivers” at the bottom of this readme.
-
-If the OHDSI package [CirceR](https://github.com/OHDSI/CirceR) is not
-already installed on your system, you may need to directly install this
-from the OHDSI/CirceR github page, as this is a non-CRAN dependency
-required by CDMConnector. You may similarly need to install the
-[CohortGenerator](https://github.com/OHDSI/CohortGenerator) package
-directly from GitHub.
-
-    #devtools::install_github("OHDSI/CohortGenerator")
-    #devtools::install_github("OHDSI/CirceR")
-
-    connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="redshift",
-                                                                    server="myServer/serverName",
-                                                                    user="user",
-                                                                    port = "1337",
-                                                                    password="passowrd",
-                                                                    pathToDriver = "path/to/JDBC_drivers/")
-
-    cdmSchema <- "schema_containing_data"
-    writeSchema <- "schema_with_write_access"
+A user script is included in this repository,`userScript.R`, to demonstrate how ARTEMIS works. It uses a dummy database to create patients and align them with treatment regimens. Instructions for connecting to your CDM are provided in the next section.
 
 ### Input
 
-An input JSON containing a cohort specification is input by the user.
-Information on OHDSI cohort creation and best practices can be found
-[here](https://ohdsi.github.io/TheBookOfOhdsi/Cohorts.html). An example
-cohort selecting for patients with NSCLC is provided with the package.
+An input JSON file containing a cohort specification is provided by the user. Information on OHDSI cohort creation and best practices can be found [here](https://ohdsi.github.io/TheBookOfOhdsi/Cohorts.html). An example cohort selecting patients with NSCLC is included with the package.
 
     df_json <- loadCohort()
     json <- df_json$json[1]
     name <- "examplecohort"
 
-    #Manual
-    #json <- CDMConnector::readCohortSet(path = here::here("myCohort/"))
-    #name <- "customcohort"
+    # Manual
+    # json <- CDMConnector::readCohortSet(path = here::here("myCohort/"))
+    # name <- "customcohort"
 
-Regimen data may be read in from the provided package, or may be
-submitted directly by the user. All of the provided regimens will be
-tested against all patients within a given cohort.
+
+Regimen data may be loaded from the package or provided directly by the user. All supplied regimens are evaluated against all patients within a given cohort.
 
     regimens <- loadRegimens(condition = "all")
     regGroups <- loadGroups()
 
-    #Manual
-    #regimens <- read.csv("/path/to/my/regimens.csv")
+    # Manual
+    # regimens <- read.csv("/path/to/my/regimens.csv")
 
-A set of valid drugs may also be read in using the provided data, or may
-be curated and submitted by the user. Only valid drugs will appear in
-processed patient strings, and thus any drugs not included here will not
-effect alignment. Drugs which are frequently taken outside of
-chemotherapy regimens, such as antiemetics, should not be added to this
-list.
+A set of valid drugs may be loaded from the provided data or curated and submitted by the user. Only valid drugs will appear in processed patient strings. Therefore, any drugs not included in this list will not affect alignment. Drugs that are frequently taken outside of chemotherapy regimens, such as antiemetics, should not be included.
 
     validDrugs <- loadDrugs()
 
-    #Manual
-    #validDrugs <- read.csv(here::here("data/myDrugs.csv"))
+    # Manual
+    # validDrugs <- read.csv(here::here("data/myDrugs.csv"))
 
 ### Pipeline
 
-The cdm connection is used to generate a dataframe containing the
-relevant patient details for constructing regimen strings.
+The cdm connection is used to generate a dataframe containing the relevant patient details for constructing regimen strings.
 
     con_df <- getConDF(connectionDetails = connectionDetails, 
                        json = json, 
@@ -192,39 +87,42 @@ relevant patient details for constructing regimen strings.
                        cdmSchema = cdmSchema, 
                        writeSchema = writeSchema)
 
-Regimen strings are then constructed, collated and filtered into a
+Patients drug records are then constructed, collated and filtered into a
 stringDF dataframe containing all patients of interest.
 
     stringDF <- stringDF_from_cdm(con_df = con_df, validDrugs = validdrugs)
 
-The TSW algorithm is then run using user input settings and the provided
-regimen and patient data. Detailed information on user inputs, such as
-the gap penalty, g, can be found [here](www.github.com/OHDIS/ARTEMIS).
+First check if the dates are correctly written 
 
-    output_all <- stringDF %>% 
-        generateRawAlignments(
-            regimens = regimens,
-            g = 0.4,
-            Tfac = 0.5,
-            verbose = 0,
-            mem = -1,
-            method = "PropDiff"
-        )
+    con_df$drug_exposure_start_date
 
-Raw output alignments are then post-processed.
-Post-processing steps include the handling of
-overlapping regimen alignments, as well as formatting output for
-submission to an episode era table.
+If the dates appear as numeric values like this: 
 
-    processedAll <- output_all %>% 
-            processAlignments(regimenCombine = 28, regimens = regimens)
+```
+  [1]  393379200  393379200 1422230400 1422230400  739411200 1457568000  848361600  848361600
+  [9]  308966400  308966400  314064000 1293408000 1082073600 1082073600 1082073600  806198400
+```
+they need to be converted to a proper date format for further processing.
 
-Treatment trajectories, or regimen eras, can then be calculated, adding
-further information about the relative sequencing order of different
-regimens and regimen types.
+    con_df$drug_exposure_start_date <- as.POSIXct(con_df$drug_exposure_start_date,
+                                                  origin = "1970-01-01",
+                                                  tz = "UTC")
 
-    pa <- processedAll %>% 
-            calculateEras(discontinuationTime = 90)
+Now, we can create our patient drug record dataframe.
+
+    stringDF <- stringDF_from_cdm(con_df = con_df,
+                                  validDrugs = validdrugs)
+
+
+We are ready to align the patient data against the regiments. Detailed information on user inputs, such as the gap penalty `g`, can be found [here](www.github.com/OHDIS/ARTEMIS).
+
+    ra <- stringDF %>% 
+        generateRawAlignments(regimens = regimens)
+
+Raw alignments are subsequently post-processed. These steps include resolving overlapping regimen alignments and formatting the output for line-of-treatment assignment.
+
+    pa <- ra %>% 
+            processAlignments(regimenCombine = 28)
 
 
 Individual patient regimens can be visualized using `plotAlignment`.
@@ -235,7 +133,7 @@ p
 ```
 
 <figure>
-<img src="./img/alignment_example.png?" alt="ARTEMIS Workflow" />
+<img src="./vignettes/images/alignment_example.png?" alt="ARTEMIS Workflow" />
 <figcaption aria-hidden="true">Visualization of Aligned Regimens</figcaption>
 </figure>
 
@@ -260,8 +158,49 @@ Finally, basic statistics is providedy by:
             enerateRegimenStats()
 
 
+### DatabaseConnector
+
+ARTEMIS also relies on the package [DatabaseConnector](https://github.com/OHDSI/DatabaseConnector) to create a connection to your CDM. Cohort creation requires a valid schema containing data and a pre-existing schema with write access. This write schema is used to store cohort tables during their generation and can be safely deleted after running the package.
+
+
+The specific drivers required by dbConnect may change depending on your
+system. More detailed information can be found in the section “DBI
+Drivers” at the bottom of this readme.
+
+
+If the OHDSI package [CirceR](https://github.com/OHDSI/CirceR) is not already installed on your system, you may need to install it directly from the OHDSI/CirceR GitHub page, as it is a non-CRAN dependency required by CDMConnector. You may similarly need to install the [CohortGenerator](https://github.com/OHDSI/CohortGenerator) package directly from GitHub.
+
+    #devtools::install_github("OHDSI/CohortGenerator")
+    #devtools::install_github("OHDSI/CirceR")
+
+    connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="redshift",
+                                                                    server="myServer/serverName",
+                                                                    user="user",
+                                                                    port = "1337",
+                                                                    password="passowrd",
+                                                                    pathToDriver = "path/to/JDBC_drivers/")
+
+    cdmSchema <- "schema_containing_data"
+    writeSchema <- "schema_with_write_access"
+
+
+
+##  User Documentation
+
+Documentation can be found on the [package website](https://ohdsi.github.io/ARTEMIS/).
+
 ## Getting help
 
 If you encounter a clear bug, please file an issue with a minimal
 [reproducible example](https://reprex.tidyverse.org/) at the [GitHub
 issues page](https://github.com/OHDSI/ARTEMIS/issues).
+
+## Support
+
+* Developer questions/comments/feedback: <a href="https://forums.ohdsi.org/c/developers/7">OHDSI Forum</a>
+* We use the <a href="https://github.com/OHDSI/ARTEMIS/issues">GitHub issue tracker</a> for all bugs/issues/enhancements
+
+## Contributing
+
+Read [here](https://ohdsi.github.io/Hades/contribute.html) how you can contribute to this package. 
+ 

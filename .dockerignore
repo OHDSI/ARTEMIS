@@ -1,0 +1,11 @@
+.git
+.github
+.gitignore
+.Rhistory
+.RData
+.Rproj.user
+.DS_Store
+Dockerfile
+docker-compose.yml
+docker-compose.yaml
+*.log
