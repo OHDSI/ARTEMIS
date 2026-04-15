@@ -1,6 +1,6 @@
 <p float="left">
 
-<img src="./vignettes/images/artemis.png" style="vertical-align: center;" width="100"/>
+<img src="vignettes/images/artemis.png" style="vertical-align: center;" width="100"/>
 
 </p>
 
@@ -11,7 +11,7 @@ Although applicable to various contexts, ARTEMIS is primarily intended for cance
 
 
 <figure>
-<img src="./vignettes/images/Workflow_Detailed.png?" alt="ARTEMIS Workflow" />
+<img src="vignettes/images/Workflow_Detailed.png" alt="ARTEMIS Workflow" />
 <figcaption aria-hidden="true">ARTEMIS Workflow</figcaption>
 </figure>
 
