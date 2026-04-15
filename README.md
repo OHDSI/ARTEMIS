@@ -1,6 +1,6 @@
 <p float="left">
 
-<img src="./img/artemis.png" style="vertical-align: center;" width="100"/>
+<img src="./vignettes/images/artemis.png" style="vertical-align: center;" width="100"/>
 
 </p>
 
@@ -11,12 +11,12 @@ Although applicable to various contexts, ARTEMIS is primarily intended for cance
 
 
 <figure>
-<img src="./img/Workflow_Detailed.png?" alt="ARTEMIS Workflow" />
+<img src="./vignettes/images/Workflow_Detailed.png?" alt="ARTEMIS Workflow" />
 <figcaption aria-hidden="true">ARTEMIS Workflow</figcaption>
 </figure>
 
 ### Quick to Docs:
-* See [release notes](docs/branch-versioning.md) for versioning and contribution.
+* See [release notes](vignettes/branch-versioning.md) for versioning and contribution.
 
 ## Installation
 
@@ -133,7 +133,7 @@ p
 ```
 
 <figure>
-<img src="./img/alignment_example.png?" alt="ARTEMIS Workflow" />
+<img src="./vignettes/images/alignment_example.png?" alt="ARTEMIS Workflow" />
 <figcaption aria-hidden="true">Visualization of Aligned Regimens</figcaption>
 </figure>
 
@@ -185,8 +185,22 @@ If the OHDSI package [CirceR](https://github.com/OHDSI/CirceR) is not already in
 
 
 
+##  User Documentation
+
+Documentation can be found on the [package website](https://ohdsi.github.io/ARTEMIS/).
+
 ## Getting help
 
 If you encounter a clear bug, please file an issue with a minimal
 [reproducible example](https://reprex.tidyverse.org/) at the [GitHub
 issues page](https://github.com/OHDSI/ARTEMIS/issues).
+
+## Support
+
+* Developer questions/comments/feedback: <a href="https://forums.ohdsi.org/c/developers/7">OHDSI Forum</a>
+* We use the <a href="https://github.com/OHDSI/ARTEMIS/issues">GitHub issue tracker</a> for all bugs/issues/enhancements
+
+## Contributing
+
+Read [here](https://ohdsi.github.io/Hades/contribute.html) how you can contribute to this package. 
+ 
