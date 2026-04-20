@@ -116,13 +116,12 @@ no extra installs required for the hook itself.
 
 ## CI validation
 
-Every PR triggers `.github/workflows/lint.yml`, which runs three jobs:
+Every PR triggers `.github/workflows/lint.yml`, which runs two jobs:
 
 | Job | What it checks |
 |-----|---------------|
-| `lint-commits` | Every commit in the PR via `cz check` |
+| `lint-commits` | Every commit in the PR via `cz check` + PR title |
 | `lint-branch` | Branch name against the naming regex |
-| `r-tests` | `devtools::test()` + R CMD check |
 
 **If CI blocks your PR:**
 

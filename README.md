@@ -16,7 +16,7 @@ Although applicable to various contexts, ARTEMIS is primarily intended for cance
 </figure>
 
 ### Quick to Docs:
-* See [release notes](vignettes/branch-versioning.md) for versioning and contribution.
+* See [Releases & Branch Workflow](https://ohdsi.github.io/ARTEMIS/articles/branch-versioning.html) for versioning and contribution.
 
 ## Installation
 
