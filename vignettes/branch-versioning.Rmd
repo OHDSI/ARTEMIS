@@ -1,35 +1,235 @@
 ---
-title: "ARTEMIS Releases"
+title: "ARTEMIS Releases & Branch Workflow"
 author: "Strahinja Stevanovic, Svetozar Nesic"
 date: '`r Sys.Date()`'
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{ARTEMIS Installation Guide}
+  %\VignetteIndexEntry{ARTEMIS Releases & Branch Workflow}
   %\VignetteEncoding{UTF-8}
 ---
 
-Notice: Due to bundled data requirements, users are encouraged to utilize Git’s built-in versioning features for deployment and package management.
+## Installing a specific release
 
-1. main latest 
-```
-git clone --branch v1.2.0 https://github.com/OHDSI/ARTEMIS.git
-```
+Due to bundled data requirements, users are encouraged to use Git's built-in
+versioning features for deployment and package management.
 
-2. previous version 
-```
-git clone --branch [v1.1.0] https://github.com/OHDSI/ARTEMIS.git
-```
+Install the latest production release:
 
-In any time user can view the current releases:  
-``gh release list``
-
-Also, easy start a new update branch:
-```
-git checkout -b <hotfix-for-v1.2.0>
+```r
+devtools::install_github("OHDSI/ARTEMIS")
 ```
 
-and contribute with a Pull Request.
+Install a specific tagged version:
 
-Important note: 
-Please consult us if you plan to use non-main branch for diagnostics.
+```r
+devtools::install_github("OHDSI/ARTEMIS@v1.4.1")
+```
+
+Or clone a tagged release locally:
+
+```bash
+git clone --branch v1.4.1 https://github.com/OHDSI/ARTEMIS.git
+```
+
+View all available releases:
+
+```bash
+gh release list
+```
+
+---
+
+## Gitflow branch topology
+
+ARTEMIS follows a strict Gitflow model. Every branch has a defined purpose and a
+defined merge direction.
+
+```
+main
+ └── develop
+      ├── feat/*      feature work
+      ├── fix/*       bug fixes
+      ├── chore/*     maintenance, deps, data updates
+      ├── docs/*      documentation-only changes
+      ├── refactor/*  code restructure, no behavior change
+      ├── test/*      testthat additions or fixes
+      ├── ci/*        GitHub Actions workflow changes
+      └── release/*   release preparation, changelog freeze
+           └── hotfix/*  emergency patches off main
+```
+
+### Merge direction
+
+```
+feat/* ──┐
+fix/*  ──┤
+chore/*──┤──► develop ──► release/* ──► main
+ci/*   ──┘                               │
+                                         └──► hotfix/* ──► main + develop
+```
+
+- All feature/fix/chore work targets **develop**.
+- Release branches are cut from **develop**; only changelog freezes and
+  version bumps happen there.
+- **main** receives merges only from `release/*` or `hotfix/*`.
+- `hotfix/*` branches off **main** and merges back into **main** *and*
+  **develop**.
+
+### Branch types and purposes
+
+| Type | Purpose |
+|------|---------|
+| `main` | Production-ready, tagged releases (`v1.x.x`) |
+| `develop` | Integration branch — base for all feature branches |
+| `feat/*` | New alignment features, new exported R functions |
+| `fix/*` | Bug fixes in alignment, scoring, plotting, I/O |
+| `release/*` | Release preparation — no new features after branch cut |
+| `hotfix/*` | Emergency patches branched off `main` |
+| `ci/*` | CI/CD workflow changes only |
+| `chore/*` | Maintenance, dependency bumps, data updates |
+| `docs/*` | Documentation changes only |
+| `refactor/*` | Code restructure with no behaviour change |
+| `test/*` | testthat additions or fixes |
+
+### Legacy branches
+
+Branches named `ss/*`, `sn/*`, `f/ss/*`, `ss-wrap/*` are grandfathered from
+earlier development. They have been removed from the remote. **All new branches
+must use the canonical naming convention** described in the next section.
+
+---
+
+## Branch naming rules
+
+### Canonical pattern
+
+```
+<type>/<scope-or-ticket>/<short-description>
+```
+
+Examples:
+
+```
+feat/GH-42/cython-param-pass
+fix/GH-67/empty-alignment
+chore/GH-xx/update-deps
+ci/GH-xx/r-tests
+release/1.5.0
+hotfix/1.4.2
+```
+
+### Valid types
+
+```
+feat  fix  chore  docs  style  refactor  test  ci  release  hotfix
+```
+
+### Validation regex (shared by hook and CI)
+
+```
+^(feat|fix|chore|docs|style|refactor|test|ci|release|hotfix)/.+
+```
+
+Contributors can test a branch name locally:
+
+```bash
+echo "feat/GH-42/my-feature" | grep -qE \
+  '^(feat|fix|chore|docs|style|refactor|test|ci|release|hotfix)/.+' \
+  && echo "✔ valid" || echo "✘ invalid"
+```
+
+### What happens when the rule is violated
+
+- **Locally** (if hooks are activated): the `commit-msg` hook blocks a bad
+  commit message immediately with a descriptive error. Branch name enforcement
+  is handled by the `lint-branch` CI job.
+- **On GitHub**: the `lint-branch` CI job fails the PR with a clear message
+  naming the invalid branch and showing the required format. The branch
+  protection rules (see *Push permissions* below) then block the merge until the
+  branch is renamed and re-pushed.
+
+To rename a branch:
+
+```bash
+git branch -m old-name feat/GH-xx/new-name
+git push origin -u feat/GH-xx/new-name
+git push origin --delete old-name   # clean up remote
+```
+
+### Commit tooling
+
+[commitizen](https://commitizen-tools.github.io/commitizen/) (`cz`) is the
+recommended tool for crafting commit messages. It provides an interactive wizard
+and is **required** for cutting releases (`cz bump`).
+
+```bash
+pip install commitizen
+
+# interactive commit wizard:
+cz commit
+
+# or use plain git (CI validates regardless):
+git commit -m "feat(scoring): add gap-open param"
+```
+
+CI validates every commit in every PR automatically — no local install is
+required for contributors. Local installation is optional but recommended for
+the interactive wizard, and mandatory for release managers.
+
+---
+
+## Push permissions
+
+### Enforcement architecture
+
+```
+git commit
+  └─► commit-msg hook  [LOCAL, opt-in: git config core.hooksPath .githooks]
+        → blocks bad message format immediately, zero installs needed
+
+git push origin <branch>
+  └─► PR opened on GitHub
+        └─► lint.yml fires on every PR (branches: ['**'])
+              ├─ lint-commits  — cz check every commit in the PR
+              ├─ lint-branch   — bash regex on branch name
+              └─ r-tests       — devtools::test() + R CMD check
+                    └─► branch protection  [main + develop, server-side, DEFERRED]
+```
+
+### Branch protection rules (GitHub Settings → Branches)
+
+> **Note:** Branch protection is configured *after* `release/1.5.0` is merged
+> into `main`. The CI jobs (`lint-commits`, `lint-branch`, `r-tests`) must be
+> live and verified on `main` before protection rules are enabled — enabling
+> them before that would block all PRs with no recourse.
+>
+> Order: merge `release/1.5.0` → verify `lint.yml` on a test PR → enable rules.
+
+**main**
+
+| Setting | Value |
+|---------|-------|
+| Require pull request before merging | ON |
+| Required approvals | 1 |
+| Required status checks | `lint-commits`, `lint-branch`, `r-tests` |
+| Require branches to be up to date | ON |
+| Do not allow bypassing (including admins) | ON |
+| Allow force pushes | OFF |
+| Allow deletions | OFF |
+
+**develop**
+
+Same as `main` with:
+
+| Setting | Value |
+|---------|-------|
+| Required status checks | `lint-commits`, `lint-branch` |
+| Allow admins to bypass | ON |
+
+### Why server-side rules?
+
+Branch protection survives any local bypass — even admins cannot push directly
+to `main`. All changes to `main` must arrive via a pull request that passes CI.
+This ensures every commit on `main` has a validated message, a conforming branch
+name, and passing tests.
