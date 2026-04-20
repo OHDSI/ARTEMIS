@@ -1,0 +1,104 @@
+name: Lint & Test
+
+on:
+  pull_request:
+    branches: ['**']
+
+jobs:
+  # ── Item 8: Commit message validation ──────────────────────────────────────
+  lint-commits:
+    name: lint-commits
+    runs-on: ubuntu-latest
+    env:
+      ARTEMIS_SKIP_HOOKS: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history required for rev-range
+
+      - name: Install commitizen
+        run: pip install commitizen
+
+      - name: Validate commit messages
+        run: |
+          cz check --rev-range origin/develop..HEAD
+
+      - name: Validate PR title (becomes squash-merge commit)
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            chore
+            docs
+            style
+            refactor
+            test
+            ci
+            perf
+
+  # ── Item 9: Branch name validation ─────────────────────────────────────────
+  lint-branch:
+    name: lint-branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch naming convention
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          # Exempt permanent branches
+          case "$BRANCH" in
+            main|develop|gh-pages) exit 0 ;;
+          esac
+
+          PATTERN='^(feat|fix|chore|docs|style|refactor|test|ci|release|hotfix)/.+'
+
+          if ! printf '%s' "$BRANCH" | grep -qE "$PATTERN"; then
+            echo ""
+            echo "✘ Branch name \"$BRANCH\" is invalid."
+            echo "  Expected format: type/scope/description"
+            echo "  Valid types: feat fix chore docs style refactor test ci release hotfix"
+            echo "  Rename your branch and push again."
+            echo "  See: vignette(\"branch-versioning\")"
+            echo ""
+            exit 1
+          fi
+
+          echo "✔ Branch name \"$BRANCH\" is valid."
+
+  # ── Item 8: R package tests ─────────────────────────────────────────────────
+  r-tests:
+    name: r-tests
+    runs-on: ubuntu-latest
+    env:
+      ARTEMIS_SKIP_HOOKS: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install R dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            devtools
+            networkD3
+
+      - name: Install ARTEMIS
+        run: Rscript -e 'devtools::install(dependencies = TRUE)'
+
+      - name: Run tests
+        run: Rscript -e 'devtools::test()'
+
+      - name: R CMD check
+        run: Rscript -e 'devtools::check(error_on = "error")'
