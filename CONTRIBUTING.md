@@ -179,3 +179,77 @@ Python and Cython are an **implementation detail** of ARTEMIS. Contributors do
 not need to install Python, touch `.py` / `.pyx` files, or understand the bridge
 layer. The R test suite (`test-100-bridge.R`) exercises the full stack
 automatically.
+
+---
+
+## Technical Debt Standard
+
+### When to open a tech-debt issue
+
+Open one when you encounter any of the following:
+
+- Hard-to-maintain code with unclear intent
+- A temporary workaround that was never revisited
+- Poor separation of concerns making future changes risky
+- Legacy behaviour whose contract is undocumented
+- Missing tests for logic that is correctness-critical
+
+### Required labels
+
+Every tech-debt issue **must** have exactly three labels:
+
+| Group | Pick one |
+|-------|----------|
+| `type:tech-debt` | always |
+| `area:*` | see table below |
+| `priority:*` | P1 / P2 / P3 |
+
+**Area labels:**
+
+| Label | Scope |
+|-------|-------|
+| `area:data-records` | Patient records, regimen reference data |
+| `area:scoring` | Aligner algorithm, penalty params, TSW / Cython implementation |
+| `area:reports` | Output reports, stats, `writeOutputs` |
+| `area:prealign` | Pre-alignment — blacklisting (`cleanByBlacklist`, `buildBlacklistRegex`), `stringDF_from_cdm`, `encode`/`decode` |
+| `area:postalign` | Post-alignment — `processAlignments`, `lineOfTreatment`, `removeOverlaps`, `createDrugDF` |
+| `area:r-bridge` | R ↔ Python/Cython bridge and reticulate layer |
+| `area:ci` | GitHub Actions workflows, hooks, CI tooling |
+| `area:docs` | README, man pages, vignettes, CONTRIBUTING |
+
+**Priority rules:**
+
+| Label | When to use |
+|-------|-------------|
+| `priority:P1` | Blocks development or risks correctness — fix before next release |
+| `priority:P2` | Affects maintainability — schedule within current cycle |
+| `priority:P3` | Cleanup / low risk — backlog |
+
+### Issue template
+
+Use the **Technical Debt** issue template (`.github/ISSUE_TEMPLATE/tech-debt.yml`).
+Required fields:
+
+```
+Location    – file + function / line range
+Problem     – what is wrong and why
+Impact      – risk | maintainability | correctness | performance
+Direction   – suggested fix (optional but encouraged)
+Related     – linked issues / PRs
+```
+
+**Compliant example title:** `debt: cleanText does not handle NULL drug_concept_id`
+
+### Review cadence
+
+- **Who assigns priority:** any maintainer may triage; final priority set by lead maintainer.
+- **When reviewed:** at the start of each release cycle when the release branch is cut.
+- **How scheduled:** P1 items block the release; P2 items are slotted into the milestone; P3 items go to the backlog.
+
+### Applying labels to GitHub
+
+Label definitions live in `.github/labels.yml`. Apply them once:
+
+```bash
+gh label import .github/labels.yml
+```

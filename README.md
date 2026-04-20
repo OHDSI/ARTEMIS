@@ -202,5 +202,10 @@ issues page](https://github.com/OHDSI/ARTEMIS/issues).
 
 ## Contributing
 
-Read [here](https://ohdsi.github.io/Hades/contribute.html) how you can contribute to this package. 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for branch naming, commit format, PR checklist, and the
+[Technical Debt Standard](CONTRIBUTING.md#technical-debt-standard).
+
+Full workflow documentation is published at the package website:
+- [Releases & Branch Workflow](https://ohdsi.github.io/ARTEMIS/articles/branch-versioning.html)
+- [Testing Strategy & Commit Standards](https://ohdsi.github.io/ARTEMIS/articles/testing-strategy.html)
  

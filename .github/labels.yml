@@ -1,0 +1,54 @@
+# GitHub label definitions for ARTEMIS
+# Apply with:  gh label import .github/labels.yml
+# or:          gh label create <name> --color <hex> --description <desc>
+
+# ── Type ──────────────────────────────────────────────────────────────────────
+- name: "type:tech-debt"
+  color: "d93f0b"
+  description: "Technical debt — maintenance, workarounds, legacy behaviour"
+
+# ── Area ──────────────────────────────────────────────────────────────────────
+- name: "area:data-records"
+  color: "0075ca"
+  description: "Patient records, regimen reference data"
+
+- name: "area:scoring"
+  color: "0075ca"
+  description: "Aligner algorithm, penalty params, TSW / Cython implementation"
+
+- name: "area:reports"
+  color: "0075ca"
+  description: "Output reports, stats, writeOutputs"
+
+- name: "area:prealign"
+  color: "0075ca"
+  description: "Pre-alignment — blacklisting, cleanByBlacklist, stringDF_from_cdm, encode/decode"
+
+- name: "area:postalign"
+  color: "0075ca"
+  description: "Post-alignment — processAlignments, lineOfTreatment, removeOverlaps, createDrugDF"
+
+- name: "area:r-bridge"
+  color: "0075ca"
+  description: "R ↔ Python/Cython bridge and reticulate layer"
+
+- name: "area:ci"
+  color: "0075ca"
+  description: "GitHub Actions workflows, hooks, CI tooling"
+
+- name: "area:docs"
+  color: "0075ca"
+  description: "README, man pages, vignettes, CONTRIBUTING"
+
+# ── Priority ──────────────────────────────────────────────────────────────────
+- name: "priority:P1"
+  color: "b60205"
+  description: "Blocks development or risks correctness"
+
+- name: "priority:P2"
+  color: "e4e669"
+  description: "Affects maintainability"
+
+- name: "priority:P3"
+  color: "0e8a16"
+  description: "Cleanup / low risk"

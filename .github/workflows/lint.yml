@@ -3,6 +3,8 @@ name: Lint & Test
 on:
   pull_request:
     branches: ['**']
+  push:
+    branches: ['79-150-ci']   # dev-only: remove after branch is merged
 
 jobs:
   # ── Item 8: Commit message validation ──────────────────────────────────────
