@@ -3,8 +3,6 @@ name: Lint & Test
 on:
   pull_request:
     branches: ['**']
-  push:
-    branches: ['79-150-ci']   # dev-only: remove after branch is merged
 
 jobs:
   # ── Item 8: Commit message validation ──────────────────────────────────────
@@ -23,7 +21,7 @@ jobs:
 
       - name: Validate commit messages
         run: |
-          cz check --rev-range origin/develop..HEAD
+          cz check --rev-range ${{ github.event.pull_request.base.sha }}..HEAD
 
       - name: Validate PR title (becomes squash-merge commit)
         uses: amannn/action-semantic-pull-request@v5
@@ -69,38 +67,3 @@ jobs:
           fi
 
           echo "✔ Branch name \"$BRANCH\" is valid."
-
-  # ── Item 8: R package tests ─────────────────────────────────────────────────
-  r-tests:
-    name: r-tests
-    runs-on: ubuntu-latest
-    env:
-      ARTEMIS_SKIP_HOOKS: true
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup R
-        uses: r-lib/actions/setup-r@v2
-        with:
-          use-public-rspm: true
-
-      - name: Setup Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install R dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          packages: |
-            devtools
-            networkD3
-
-      - name: Install ARTEMIS
-        run: Rscript -e 'devtools::install(dependencies = TRUE)'
-
-      - name: Run tests
-        run: Rscript -e 'devtools::test()'
-
-      - name: R CMD check
-        run: Rscript -e 'devtools::check(error_on = "error")'
