@@ -4,7 +4,12 @@
 \alias{plotAlignment}
 \title{Plots a full alignment output}
 \usage{
-plotAlignment(pa, known_drugs = NULL, collapse_regimens = TRUE)
+plotAlignment(
+  pa,
+  known_drugs = NULL,
+  collapse_regimens = TRUE,
+  add_summary = TRUE
+)
 }
 \arguments{
 \item{pa}{A patient alignment dataframe created by processAlignments() or generateRawAlignments()}

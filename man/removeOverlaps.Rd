@@ -7,7 +7,7 @@
 removeOverlaps(df)
 }
 \arguments{
-\item{df}{A dataframe created by align() with cumulative times added by add_cumultive_times_to_df()}
+\item{df}{A dataframe created by align() with cumulative times added by calculateRegimenTimes()}
 }
 \value{
 A data.table object without removed overlaps
