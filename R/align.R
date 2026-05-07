@@ -83,6 +83,8 @@ generateRawAlignments <- function(stringDF,
     output <- output %>%
         dplyr::filter(!is.na(adjustedS) & !is.na(totAlign)) %>%
         dplyr::filter(totAlign > 0 & adjustedS > 0)
+
+    output$alignmentID <- 1:nrow(output)
     
     return(output)
 }

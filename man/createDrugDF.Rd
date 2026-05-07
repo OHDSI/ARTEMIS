@@ -4,10 +4,10 @@
 \alias{createDrugDF}
 \title{Creates cumulative times for each drug in the drug record}
 \usage{
-createDrugDF(drugRec)
+createDrugDF(patientDrugRecord)
 }
 \arguments{
-\item{drugRec}{A drug record}
+\item{patientDrugRecord}{A complete patient drug record}
 }
 \value{
 A data.table object with drugs

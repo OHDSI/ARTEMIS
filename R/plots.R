@@ -2,7 +2,7 @@
 #' 
 #' For each patient separately, plot drug exposures and aligned regimens over time
 #' @param pa A patient alignment dataframe created by processAlignments() or generateRawAlignments()
-#' @param known_drugs A vector of drug names to highlight the missing in the plot. Default is NULL
+#' @param regimens A regimen dataframe, containing required regimen column shortStrings. Used to determine which drugs are missing in regimens for summary report and plot.
 #' @param collapse_regimens A boolean indicating whether to collapse regimens into a single row
 #' @return plot - A list of ggplot objects
 #' @export
@@ -13,7 +13,10 @@
 #' @importFrom forcats fct_reorder
 #' @importFrom tidyr separate_rows separate 
 #' @importFrom RColorBrewer brewer.pal
-plotAlignment <- function(pa, known_drugs = NULL, collapse_regimens = TRUE) {
+#' @importFrom viridis viridis
+#' @importFrom patchwork plot_layout wrap_elements
+#' @importFrom gridExtra tableGrob ttheme_default 
+plotAlignment <- function(pa, regimens, collapse_regimens = TRUE, add_summary = TRUE) {
     if (nrow(pa) == 0) {
        cli::cat_bullet(
             paste("No patients detected!", sep = ""),
@@ -43,8 +46,10 @@ plotAlignment <- function(pa, known_drugs = NULL, collapse_regimens = TRUE) {
             p_pa <- pa %>%
                 filter(patient_name == p)
             p_plot <- plotAlignment(pa = p_pa, 
-                                    known_drugs = known_drugs, 
-                                    collapse_regimens = collapse_regimens)
+                                    regimens = regimens,
+                                    collapse_regimens = collapse_regimens, 
+                                    add_summary = add_summary)
+
             p_plots[[as.character(p)]] = p_plot
         }
         return(p_plots)
@@ -56,9 +61,8 @@ plotAlignment <- function(pa, known_drugs = NULL, collapse_regimens = TRUE) {
     
     # check if t_start and t_end columns exist
     if (!all(c("t_start","t_end") %in% names(pa))) {
-        drugRec <- encode(pa$CompleteDrugRecord[1])
-        drugDF <- createDrugDF(drugRec)
-        pa <- add_cumultive_times_to_df(pa, drugDF)
+        drugDF <- createDrugDF(pa$CompleteDrugRecord[1])
+        pa <- calculateRegimenTimes(pa, drugDF)
         pa$component <- pa$regName  
     }
     
@@ -125,6 +129,13 @@ plotAlignment <- function(pa, known_drugs = NULL, collapse_regimens = TRUE) {
     df_regimens = df %>% 
         filter(case == "regimen")
 
+    # get known drugs from regimens to bold missing drugs in the plot
+    known_drugs = regimens$shortString %>% 
+        str_split(";") %>% 
+        unlist() %>% 
+        str_replace("^[^.]*\\.", "") %>%
+        unique()
+
     p <- df %>%
         ggplot() +
         geom_point(aes(x = t_start, y = y, color = component), show.legend = FALSE) +
@@ -176,6 +187,50 @@ plotAlignment <- function(pa, known_drugs = NULL, collapse_regimens = TRUE) {
                        x)
             }
         )
+    if(!add_summary) {
+        return(p)
+    }   
+
+    sa <- generateSummaryReport(pa, regimens)
+
+    # remove personID as it is redundant
+    sa <- sa %>% select(-personID)
+
+    # 1. Create a compact theme
+    shrink_style <- ttheme_default(
+        base_size = 8,                # Smaller font (default is 12)
+        padding = unit(c(2, 2), "mm") # Tighter internal margins
+    )
+    # 2. Generate grob
+    table_grob <- tableGrob(sa, theme = shrink_style, rows = NULL)
+
+
+    # 2. Identify the cells to color
+    # find_rows/cols helps locate the 'core' body of the table
+    find_cells <- table_grob$layout$name == "core-bg"
+    grid_cells <- which(find_cells)
+
+    # 3. Define your colors
+    true_color <- "#FF9199"  # Light green
+    false_color <- "#99FA99" # Light red
+
+    # 4. Loop through the data and update the fill
+    # We use as.matrix(sa) to ensure we can index it easily
+    cell_values <- as.vector(t(as.matrix(sa))) # Transpose to match grob's row-major order
+
+    for(i in seq_along(grid_cells)) {
+        cell_index <- grid_cells[i]
+        if(cell_values[i] == "TRUE") {
+            table_grob$grobs[[cell_index]]$gp$fill <- true_color
+        } else if (cell_values[i] == "FALSE") {
+            table_grob$grobs[[cell_index]]$gp$fill <- false_color
+        }
+    }
+
+    # 3. Combine with explicit height ratios
+    p <- p / wrap_elements(table_grob) + 
+        plot_layout(heights = c(2, 1))
+
     return(p)
 }
 
