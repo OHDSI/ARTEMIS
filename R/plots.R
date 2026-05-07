@@ -2,7 +2,7 @@
 #' 
 #' For each patient separately, plot drug exposures and aligned regimens over time
 #' @param pa A patient alignment dataframe created by processAlignments() or generateRawAlignments()
-#' @param known_drugs A vector of drug names to highlight the missing in the plot. Default is NULL
+#' @param regimens A regimen dataframe, containing required regimen column shortStrings. Used to determine which drugs are missing in regimens for summary report and plot.
 #' @param collapse_regimens A boolean indicating whether to collapse regimens into a single row
 #' @return plot - A list of ggplot objects
 #' @export
@@ -16,7 +16,7 @@
 #' @importFrom viridis viridis
 #' @importFrom patchwork plot_layout wrap_elements
 #' @importFrom gridExtra tableGrob ttheme_default 
-plotAlignment <- function(pa, known_drugs = NULL, collapse_regimens = TRUE, add_summary = TRUE) {
+plotAlignment <- function(pa, regimens, collapse_regimens = TRUE, add_summary = TRUE) {
     if (nrow(pa) == 0) {
        cli::cat_bullet(
             paste("No patients detected!", sep = ""),
@@ -46,7 +46,7 @@ plotAlignment <- function(pa, known_drugs = NULL, collapse_regimens = TRUE, add_
             p_pa <- pa %>%
                 filter(patient_name == p)
             p_plot <- plotAlignment(pa = p_pa, 
-                                    known_drugs = known_drugs, 
+                                    regimens = regimens,
                                     collapse_regimens = collapse_regimens, 
                                     add_summary = add_summary)
 
@@ -129,6 +129,13 @@ plotAlignment <- function(pa, known_drugs = NULL, collapse_regimens = TRUE, add_
     df_regimens = df %>% 
         filter(case == "regimen")
 
+    # get known drugs from regimens to bold missing drugs in the plot
+    known_drugs = regimens$shortString %>% 
+        str_split(";") %>% 
+        unlist() %>% 
+        str_replace("^[^.]*\\.", "") %>%
+        unique()
+
     p <- df %>%
         ggplot() +
         geom_point(aes(x = t_start, y = y, color = component), show.legend = FALSE) +
@@ -184,7 +191,7 @@ plotAlignment <- function(pa, known_drugs = NULL, collapse_regimens = TRUE, add_
         return(p)
     }   
 
-    sa <- generateSummaryReport(pa)
+    sa <- generateSummaryReport(pa, regimens)
 
     # remove personID as it is redundant
     sa <- sa %>% select(-personID)

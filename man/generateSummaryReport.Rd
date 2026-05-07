@@ -4,7 +4,7 @@
 \alias{generateSummaryReport}
 \title{Generate summary report}
 \usage{
-generateSummaryReport(pa)
+generateSummaryReport(pa, regimens)
 }
 \arguments{
 \item{pa}{Processed alignment data with personID and t_start.}

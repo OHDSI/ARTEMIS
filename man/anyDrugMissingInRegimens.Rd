@@ -2,7 +2,7 @@
 % Please edit documentation in R/alignmentSummaryReport.R
 \name{anyDrugMissingInRegimens}
 \alias{anyDrugMissingInRegimens}
-\title{Non-Regimen Drug Exposure?}
+\title{Any Drug Missing In Regimens?}
 \usage{
 anyDrugMissingInRegimens(pa, regimens)
 }

@@ -76,7 +76,7 @@ nonRegimenDrugExposure <- function(pa) {
 }
 
 
-#' Non-Regimen Drug Exposure?
+#' Any Drug Missing In Regimens?
 #' 
 #' This function checks for each patient if there is a drug missing in regimens. 
 #' It uses the anyUncoveredDrugs function to check for each patient separately.
@@ -87,8 +87,8 @@ anyDrugMissingInRegimens <- function(pa, regimens) {
     regimen_drugs <- regimens$shortString %>% 
         str_split(";") %>% 
         unlist() %>% 
-        unique() %>% 
-        str_replace("^[^.]*\\.", "")
+        str_replace("^[^.]*\\.", "") %>%
+        unique()
 
     pa %>% 
         select(personID, CompleteDrugRecord) %>%
@@ -109,11 +109,12 @@ anyDrugMissingInRegimens <- function(pa, regimens) {
 #' @param pa Processed alignment data with personID and t_start.
 #' @importFrom dplyr full_join
 #' 
-generateSummaryReport <- function(pa) {
+generateSummaryReport <- function(pa, regimens) {
     report <- regimenStartAfterFirstDrug(pa) %>% 
         full_join(regimenEndsBeforeLastDrug(pa), by = "personID") %>% 
         full_join(nonRegimenDrugExposure(pa), by = "personID") %>%
         full_join(sameConsecutiveRegimens(pa), by = "personID") %>% 
+        full_join(anyDrugMissingInRegimens(pa, regimens), by = "personID") 
     
     return(report)
 }

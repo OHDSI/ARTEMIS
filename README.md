@@ -124,11 +124,24 @@ Raw alignments are subsequently post-processed. These steps include resolving ov
     pa <- ra %>% 
             processAlignments(regimenCombine = 28)
 
+To get alignment summary statistics per patient
+
+```
+sa <- generateSummaryReport(pa, regimens)
+```
+Where the columns are: 
+| Column Name                  | Description                                                                                                         |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `regimenStartAfterFirstDrug` | Indicates whether the regimen start date occurs after the first recorded drug exposure. |
+| `regimenEndsBeforeLastDrug`  | Indicates whether the regimen end date occurs before the last recorded drug exposure.   |
+| `sameConsecutiveRegimens`    | Indicates whether consecutive regimens are identical.                              |
+| `nonRegimenDrugExposure`     | Indicates the presence of drug exposures that do not belong to any defined regimen.                                 |
+| `anyDrugMissingInRegimens`   | Indicates whether expected drugs are missing from one or more regimen definitions.                                  |
 
 Individual patient regimens can be visualized using `plotAlignment`.
 
 ```
-p <- plotAlignment(pa)
+p <- plotAlignment(pa, regimens)
 p
 ```
 
@@ -154,8 +167,8 @@ These functions display the most frequent regimens, but additional regimens can 
 
 Finally, basic statistics is providedy by: 
 
-    regStats <- processedEras %>% g
-            enerateRegimenStats()
+    regStats <- processedEras %>% 
+            generateRegimenStats()
 
 
 ### DatabaseConnector
