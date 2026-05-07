@@ -186,13 +186,16 @@ plotAlignment <- function(pa, known_drugs = NULL, collapse_regimens = TRUE, add_
 
     sa <- generateSummaryReport(pa)
 
+    # remove personID as it is redundant
+    sa <- sa %>% select(-personID)
+
     # 1. Create a compact theme
     shrink_style <- ttheme_default(
         base_size = 8,                # Smaller font (default is 12)
         padding = unit(c(2, 2), "mm") # Tighter internal margins
     )
     # 2. Generate grob
-    table_grob <- tableGrob(sa, theme = shrink_style)
+    table_grob <- tableGrob(sa, theme = shrink_style, rows = NULL)
 
 
     # 2. Identify the cells to color
