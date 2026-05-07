@@ -2,8 +2,7 @@
 % Please edit documentation in R/alignmentSummaryReport.R
 \name{sameConsecutiveRegimens}
 \alias{sameConsecutiveRegimens}
-\title{Consecutive regimens are the same?
-Same consecutive regimens?}
+\title{Consecutive regimens are the same?}
 \usage{
 sameConsecutiveRegimens(pa)
 }

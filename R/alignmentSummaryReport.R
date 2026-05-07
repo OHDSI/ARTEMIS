@@ -11,6 +11,31 @@ regimenStartAfterFirstDrug <- function(pa) {
  }  
 
 
+#' Regimens start before the first drug?
+#' 
+#' This function checks if regimens for each person start after the first drug. 
+#' @param pa Processed alignment data with personID and t_start
+#' @importFrom dplyr group_by summarise select left_join
+#' @importFrom tidyr separate_rows
+#' 
+regimenStartBeforeFirstDrug <- function(pa, ra) {
+    # get the id of the first alignment and check if the regimen started before, 
+    # i.e. if regimen_Start > 1  
+    ra1 <- ra %>% 
+        select(personID, alignmentID, regimen_Start, drugRec_Start)
+
+    pa1 <- pa %>%
+        separate_rows(alignmentID) %>% 
+        mutate(alignmentID = as.integer(alignmentID)) %>% 
+        left_join(ra1, by = c("personID", "alignmentID"))
+        
+    pa1 %>% 
+        group_by(personID, component) %>% 
+        arrange(t_start, drugRec_Start, regimen_Start) %>%
+        summarise(regimenStartBeforeFirstDrug = first(regimen_Start) > 1)
+ }
+
+
 #' Regimens ends before last drug?
 #' 
 #' This function checks if regimens end before the last drug for each patient. 
@@ -27,7 +52,6 @@ regimenEndsBeforeLastDrug <- function(pa) {
 
 
 #' Consecutive regimens are the same?
-#' Same consecutive regimens?
 #' 
 #' This function checks if consecutive regimens are the same for each patient. 
 #' @param pa Processed alignment data with personID and t_start
@@ -109,12 +133,13 @@ anyDrugMissingInRegimens <- function(pa, regimens) {
 #' @param pa Processed alignment data with personID and t_start.
 #' @importFrom dplyr full_join
 #' 
-generateSummaryReport <- function(pa, regimens) {
+generateSummaryReport <- function(pa, ra, regimens) {
     report <- regimenStartAfterFirstDrug(pa) %>% 
         full_join(regimenEndsBeforeLastDrug(pa), by = "personID") %>% 
         full_join(nonRegimenDrugExposure(pa), by = "personID") %>%
         full_join(sameConsecutiveRegimens(pa), by = "personID") %>% 
-        full_join(anyDrugMissingInRegimens(pa, regimens), by = "personID") 
+        full_join(anyDrugMissingInRegimens(pa, regimens), by = "personID") %>% 
+        full_join(regimenStartBeforeFirstDrug(pa, ra), by = "personID")
     
     return(report)
 }
