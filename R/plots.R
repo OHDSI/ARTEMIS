@@ -14,8 +14,8 @@
 #' @importFrom tidyr separate_rows separate 
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom viridis viridis
-#' @importFrom patchwork plot_layout
-#' @importFrom gridExtra tableGrob
+#' @importFrom patchwork plot_layout wrap_elements
+#' @importFrom gridExtra tableGrob ttheme_default 
 plotAlignment <- function(pa, known_drugs = NULL, collapse_regimens = TRUE, add_summary = TRUE) {
     if (nrow(pa) == 0) {
        cli::cat_bullet(
