@@ -167,7 +167,7 @@ These functions display the most frequent regimens, but additional regimens can 
 
 Finally, basic statistics is providedy by: 
 
-    regStats <- processedEras %>% 
+    regStats <- pa %>% 
             generateRegimenStats()
 
 
