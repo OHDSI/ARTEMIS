@@ -127,7 +127,7 @@ Raw alignments are subsequently post-processed. These steps include resolving ov
 To get alignment summary statistics per patient
 
 ```
-sa <- generateSummaryReport(pa, regimens)
+sa <- generateSummaryReport(pa, ra, regimens)
 ```
 Where the columns are: 
 | Column Name                  | Description                                                                                                         |
