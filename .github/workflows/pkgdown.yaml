@@ -3,7 +3,7 @@ name: pkgdown.yaml
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
     paths:
       - 'R/**'
       - 'man/**'
@@ -11,7 +11,6 @@ on:
       - 'DESCRIPTION'
       - 'README.md'
       - '.github/workflows/pkgdown.yaml'
-  pull_request:
   release:
     types: [published]
   workflow_dispatch:
