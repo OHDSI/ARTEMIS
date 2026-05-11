@@ -2,7 +2,7 @@ name: Lint & Test
 
 on:
   pull_request:
-    branches: ['**']
+    branches: [main, develop]
 
 jobs:
   # ── Item 8: Commit message validation ──────────────────────────────────────
@@ -21,7 +21,7 @@ jobs:
 
       - name: Validate commit messages
         run: |
-          cz check --rev-range ${{ github.event.pull_request.base.sha }}..HEAD
+          cz check --rev-range origin/${{ github.base_ref }}..HEAD --allow-abort
 
       - name: Validate PR title (becomes squash-merge commit)
         uses: amannn/action-semantic-pull-request@v5

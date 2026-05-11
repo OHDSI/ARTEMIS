@@ -8,6 +8,7 @@ Description: A chemotherapy regimen detection algorithm is implemented alongside
     Utilising a temporally sensitive Smith-Waterman local alignment algorithm, we aim to generate a set of aligned drug regimens for each patient's experienced drug profile, thus allowing a simplification and summarisation of otherwise unreadable drug occurrences.
 Imports:
     reticulate (>= 1.27-9000),
+    patchwork,
     DatabaseConnector,
     dplyr,
     tidyr,
@@ -23,14 +24,14 @@ Imports:
     utils,
     stringr,
     here,
-    tidyr,
     networkD3,
     webshot,
     reshape2,
     ggsci,
     gridExtra,
     methods,
-    RColorBrewer
+    RColorBrewer,
+    viridis
 License: Apache License (>= 2)
 VignetteBuilder: knitr
 Encoding: UTF-8
