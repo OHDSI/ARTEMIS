@@ -1,0 +1,7 @@
+[tool.commitizen]
+name = "cz_conventional_commits"
+version_provider = "scm"          # reads current version from latest git tag
+version_files = ["DESCRIPTION"]   # cz bump rewrites Version: field here
+tag_format = "v$version"
+bump_message = "chore(release): bump version to $new_version"
+update_changelog_on_bump = true

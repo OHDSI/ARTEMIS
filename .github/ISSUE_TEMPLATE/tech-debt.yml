@@ -1,0 +1,57 @@
+name: Technical Debt
+description: Report technical debt — hard-to-maintain code, workarounds, missing tests, legacy behaviour
+title: "debt: <one-line summary>"
+labels: ["type:tech-debt"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Required labels (apply before submitting):**
+        - One `area:*` label
+        - One `priority:*` label
+
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: File(s) and function / line range where the debt lives
+      placeholder: "R/align.R — generateRawAlignments(), ~L120-145"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is wrong and why is it debt?
+      placeholder: |
+        The function does X and Y in a single pass with no separation of concerns.
+        A temporary workaround was added in commit abc1234 and never revisited.
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: "Select all that apply: risk / maintainability / correctness / performance"
+      placeholder: |
+        - Maintainability: any change to scoring logic requires editing this function
+        - Correctness risk: edge case for zero-drug patients is silently swallowed
+    validations:
+      required: true
+
+  - type: textarea
+    id: direction
+    attributes:
+      label: Suggested direction
+      description: How should this be resolved? (optional but strongly encouraged)
+      placeholder: |
+        Extract scoring into its own function. Add a testthat case for the
+        zero-drug edge case before refactoring.
+
+  - type: input
+    id: related
+    attributes:
+      label: Related issues / PRs
+      placeholder: "Closes #42, see also #67"

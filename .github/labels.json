@@ -1,0 +1,14 @@
+[
+  { "name": "type:tech-debt",      "color": "d93f0b", "description": "Technical debt — maintenance, workarounds, legacy behaviour" },
+  { "name": "area:data-records",   "color": "0075ca", "description": "Patient records, regimen reference data" },
+  { "name": "area:scoring",        "color": "0075ca", "description": "Aligner algorithm, penalty params, TSW / Cython implementation" },
+  { "name": "area:reports",        "color": "0075ca", "description": "Output reports, stats, writeOutputs" },
+  { "name": "area:prealign",       "color": "0075ca", "description": "cleanByBlacklist, buildBlacklistRegex, stringDF_from_cdm, encode/decode" },
+  { "name": "area:postalign",      "color": "0075ca", "description": "processAlignments, lineOfTreatment, removeOverlaps, createDrugDF" },
+  { "name": "area:r-bridge",       "color": "0075ca", "description": "R <-> Python/Cython bridge, reticulate" },
+  { "name": "area:ci",             "color": "0075ca", "description": "GitHub Actions, hooks, CI tooling" },
+  { "name": "area:docs",           "color": "0075ca", "description": "README, man pages, vignettes, CONTRIBUTING" },
+  { "name": "priority:P1",         "color": "e11d48", "description": "Blocks dev or risks correctness — fix before release" },
+  { "name": "priority:P2",         "color": "f97316", "description": "Affects maintainability — schedule in cycle" },
+  { "name": "priority:P3",         "color": "84cc16", "description": "Cleanup / low risk — backlog" }
+]

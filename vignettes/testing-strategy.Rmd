@@ -119,3 +119,130 @@ Use `devtools::test()` When:
 * You want fast, focused feedback
 
 * You're iterating on R or Python bridge logic
+
+---
+
+## Conventional Commits
+
+ARTEMIS adopts the [Conventional Commits](https://www.conventionalcommits.org/)
+specification for all commit messages. The format is enforced locally by the
+`commit-msg` hook and mandatorily by the `lint-commits` CI job on every PR.
+
+### Format
+
+```
+<type>(<scope>): <short description>
+
+[optional body]
+
+[optional footer — BREAKING CHANGE: <description>]
+```
+
+### Allowed types
+
+| Type | When to use in ARTEMIS |
+|------|------------------------|
+| `feat` | New alignment feature, new exported R function |
+| `fix` | Bug in alignment, scoring, plotting, or I/O |
+| `chore` | Dependency bumps, data updates, build scripts |
+| `docs` | README, `man/*.Rd`, vignettes |
+| `style` | Formatting only — no logic change |
+| `refactor` | Code restructure with no behaviour change |
+| `test` | testthat additions or fixes |
+| `ci` | GitHub Actions workflow changes |
+| `perf` | Algorithm performance improvements |
+
+### Scope vocabulary
+
+```
+r-bridge   cython   scoring   preprocess   plots
+data       hooks    ci        packaging
+```
+
+Scope is optional but encouraged. `cython` and similar labels are purely
+descriptive — they do not imply the contributor needs to touch Python/Cython.
+
+### Breaking changes
+
+Append `!` after the type, or add a `BREAKING CHANGE:` footer:
+
+```
+feat(r-bridge)!: rename generateRawAlignments argument order
+
+BREAKING CHANGE: the `df` parameter is now the second argument, not the first.
+```
+
+### Worked examples
+
+```
+feat(cython): pass gap-open/extend params to C extension
+fix(r-bridge): guard against empty alignment output
+ci(docker): add arm64 image build workflow
+chore(data): update regimen reference data 2025
+perf(scoring): remove redundant max in TSW score matrix
+docs(vignettes): add Gitflow branch topology section
+test(r-bridge): add testthat case for zero-drug patient
+refactor(preprocess): extract cleanText into its own function
+```
+
+### What the commit-msg hook enforces (locally, opt-in)
+
+The hook at `.githooks/commit-msg` rejects any message that does not match:
+
+```
+^(feat|fix|chore|docs|style|refactor|test|ci|perf)(\(.+\))?: .+
+```
+
+It skips merge commits and rebase operations automatically.
+
+Activate with:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+### What CI enforces (mandatory, every PR)
+
+The `lint-commits` job in `.github/workflows/lint.yml` runs:
+
+```bash
+cz check --rev-range origin/develop..HEAD
+```
+
+This validates every individual commit in the PR — not just the PR title.
+The PR title is additionally validated by `amannn/action-semantic-pull-request`
+because it becomes the squash-merge commit message.
+
+---
+
+## Release workflow (`cz bump`)
+
+The only person who needs commitizen installed locally is whoever cuts the
+release. Everyone else: just `git` + `R`.
+
+```bash
+pip install commitizen   # once, on the release manager's machine
+
+# On the release/* branch:
+cz bump          # reads commits since last tag, bumps DESCRIPTION Version,
+                 # updates CHANGELOG.md, creates a git tag (e.g. v1.5.0)
+
+git push && git push --tags
+```
+
+`cz bump` rewrites the `Version:` field in `DESCRIPTION` according to semver
+(patch / minor / major determined by commit types — `feat` → minor,
+`fix`/`perf` → patch, `BREAKING CHANGE` → major).
+
+The tag format is `v$version` (e.g. `v1.5.0`), configured in `.cz.toml`.
+
+### How commit validation works
+
+`.cz.toml` is the single source of truth for commit rules and versioning:
+
+- `cz check` (run by CI) reads allowed types from `.cz.toml`
+- `cz bump` reads the commit log and decides the next version
+- The `commit-msg` hook uses the same type list embedded as a regex
+
+Contributors never need to read `.cz.toml` directly — the type list above and
+the examples in this section are sufficient.
