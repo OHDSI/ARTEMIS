@@ -115,12 +115,16 @@ class BuildBootstrap:
 
     def _set_site_packages_dir(self):
         """Single directory to store all python site package"""
-        site_packages_dir = pathlib.Path(subprocess.check_output([
-            self._env_python, "-c",
-            "import site; print(site.getsitepackages()[0])"
-        ]).decode().strip())
+        site_packages_dir = pathlib.Path(subprocess.check_output(
+            [
+                self._env_python, "-c",
+                "import site; print(site.getsitepackages()[0])"
+            ],
+            stdin=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT,
+        ).decode().strip())
 
-        self.site_packages_dir = site_packages_dir 
+        self.site_packages_dir = site_packages_dir
 
     def _set_site_packages_var(self):
         os.environ['TSW_PACKAGE_PATH'] = str(self.site_packages_dir)
@@ -152,6 +156,12 @@ class BuildBootstrap:
                 "tqdm"
             ],
             check=True,
+            # explicit stdio: RStudio Desktop on Windows has no console handles to
+            # inherit, so leaving these unset raises OSError: [WinError 6] (see
+            # https://github.com/rstudio/reticulate/issues/1448)
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
         )
         print(f"[{LIB_LABEL}-boot-Py] Build dependencies installed successfully.")
 
@@ -173,7 +183,10 @@ class BuildBootstrap:
         subprocess.run(
             [self._env_python, str(setup_path), "build_ext", "--inplace"],
             cwd=cython_dir,
-            check=True
+            check=True,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
         )
 
         print(f"[{LIB_LABEL}-boot-Py] [OK] Cython compilation complete.")
@@ -199,7 +212,10 @@ class BuildBootstrap:
 
         try:
             pkgs = subprocess.check_output(
-                [self._env_python, "-m", "pip", "list", "--format=columns"], text=True
+                [self._env_python, "-m", "pip", "list", "--format=columns"],
+                text=True,
+                stdin=subprocess.DEVNULL,
+                stderr=subprocess.STDOUT,
             )
             print("-" * 60)
             print("Installed packages:")
